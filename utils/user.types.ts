@@ -9,12 +9,5 @@ export interface IUser {
   avatar_public_id?: string;
   avatar_url?: string;
   user_role?: string;
-}
-export interface IActivationToken {
-  token: string;
-  activationCode: string;
-}
-export interface IActivationRequest {
-  activation_token: string;
-  activation_code: string;
+  dept_id?: string;
 }

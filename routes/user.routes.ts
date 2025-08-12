@@ -8,14 +8,13 @@ import {
   validateRoleRequest,
 } from "../middleware/user.validation";
 import {
-  UserActivationController,
   UserAuthenticateUserController,
   UserDeleteUserController,
   UserGetAllUserInfoController,
   UserGetUserInfoController,
   UserLoginController,
   UserLogoutController,
-  UserRegistrationController,
+  UserCreationController,
   UserUpdateAuthTokenController,
   UserUpdateUserInfoController,
   UserUpdateUserPasswordController,
@@ -25,15 +24,11 @@ import {
 const UserRouter = express.Router();
 
 UserRouter.post(
-  "/user-registration",
+  "/user-creation",
   validateRegistrationRequest(),
-  UserRegistrationController
+  UserCreationController
 );
-UserRouter.post(
-  "/user-activation",
-  validateActivationRequest(),
-  UserActivationController
-);
+
 UserRouter.post("/login", validateLoginRequest(), UserLoginController);
 
 UserRouter.get("/logout", isAuthenticated, UserLogoutController);

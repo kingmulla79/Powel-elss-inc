@@ -3,13 +3,12 @@ import { Request, Response, NextFunction } from "express";
 import ErrorHandler from "../utils/Errorhandler";
 import { CatchAsyncError } from "../middleware/CatchAsyncErrors";
 import {
-  UserActivationService,
   UserDeleteUserService,
   UserGetAllUserInfoService,
   UserGetUserInfoService,
   UserLoginService,
   UserLogoutService,
-  UserRegistrationService,
+  UserCreationService,
   UserUpdateAuthTokenService,
   UserUpdateUserInfoService,
   UserUpdateUserPasswordService,
@@ -20,37 +19,21 @@ import { refreshTokenOptions, sendToken } from "..//utils/jwt";
 import { redis } from "../utils/Redis";
 import { isAuthenticated } from "../middleware/Auth";
 
-export const UserRegistrationController = CatchAsyncError(
+export const UserCreationController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const registrationResults = await UserRegistrationService(req.body);
+      const registrationResults = await UserCreationService(req.body);
       res.status(200).json({
         success: true,
-        message: `Account creation successful. Check the email: ${registrationResults.email} for an activation code to complete the setup process`,
-        activationToken: registrationResults.activationToken,
+        message: `New user: ${req.body.first_name} ${req.body?.surname} - email ${req.body.email} account succcessfully created`,
       });
+      logger.info(
+        `New user: ${req.body.first_name} ${req.body?.surname} - email ${req.body.email} account succcessfully created`
+      );
     } catch (error: any) {
       if (error) {
         return next(new ErrorHandler(error.message, 500));
       }
-    }
-  }
-);
-
-export const UserActivationController = CatchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const activationResults = await UserActivationService(req.body);
-
-      logger.info(
-        `${activationResults.first_name} ${activationResults.surname} registration information captured successfully`
-      );
-      res.status(201).json({
-        success: true,
-        message: `${activationResults.first_name} ${activationResults.surname} registration information captured successfully`,
-      });
-    } catch (error: any) {
-      return next(new ErrorHandler(error, 500));
     }
   }
 );

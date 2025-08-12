@@ -2,122 +2,17 @@ import {
   UserModelOperations,
   UserModelOperationsNoData,
 } from "../models/user.model";
-import {
-  IActivationRequest,
-  IActivationToken,
-  IUser,
-} from "../utils/user.types";
+import { IUser } from "../utils/user.types";
 import ErrorHandler from "../utils/Errorhandler";
-import { v2 as cloudinary } from "cloudinary";
-import ejs from "ejs";
-import path from "path";
-import jwt, { Secret } from "jsonwebtoken";
-import sendMail from "../utils/sendMail";
 import { logger } from "../utils/logger";
 import bcrypt from "bcryptjs";
 import { RefreshJWTTokens } from "../utils/jwt";
 import { redis } from "../utils/Redis";
 import { DeleteProfilePicture } from "../utils/cloudinary";
 
-export const UserRegistrationService = async (
-  body: IUser
-): Promise<{ email: string; activationToken: string }> => {
+export const UserCreationService = async (body: IUser) => {
   try {
-    const registrationCheck = new UserModelOperations(body);
-    await registrationCheck.EmailQuery();
-    await registrationCheck.PhoneQuery();
-
-    let { first_name, surname, email, user_password, phone, avatar } = body;
-
-    let avatar_public_id = "";
-    let avatar_url = "";
-
-    if (avatar) {
-      const myCloud = await cloudinary.uploader.upload(avatar, {
-        folder: "avatars",
-      });
-      avatar_public_id = myCloud.public_id;
-      avatar_url = myCloud.secure_url;
-    }
-
-    const user: IUser = {
-      first_name,
-      surname,
-      email,
-      user_password,
-      phone,
-      avatar_public_id,
-      avatar_url,
-    };
-
-    const activationInformation = createActivationToken(user);
-    const activationCode = activationInformation.activationCode;
-    const data = {
-      user: { firstname: user.first_name, surname: user.surname },
-      activationCode,
-    };
-    const html = ejs.renderFile(
-      path.join(__dirname, "../mails/Activation-mails.ejs"),
-      data
-    );
-
-    await sendMail({
-      email: email,
-      subject: "Banja User Activation",
-      template: "Activation-mails.ejs",
-      data,
-    })
-      .then(() => {
-        logger.info(
-          `Account creation successful. Check the email: ${user.email} for an activation code to complete the setup process`
-        );
-      })
-      .catch((error) => {
-        logger.error(`Error while sending activation mail. ${error}`);
-        throw new ErrorHandler(
-          `Error while sending activation mail. ${error}`,
-          500
-        );
-      });
-    return { email: user.email, activationToken: activationInformation.token };
-  } catch (error: any) {
-    logger.error(`Error while sending activation mail. ${error.message}`);
-    throw new ErrorHandler(error.message, 500);
-  }
-};
-
-const createActivationToken = (user: IUser): IActivationToken => {
-  const activationCode = Math.floor(1000 + Math.random() * 9000).toString();
-  const token = jwt.sign(
-    { user, activationCode },
-    process.env.ACTIVATION_SECRET as Secret,
-    { expiresIn: "1h" }
-  );
-  return { token, activationCode };
-};
-
-export const UserActivationService = async (
-  body: IActivationRequest
-): Promise<{ first_name: string; surname: string }> => {
-  try {
-    const { activation_token, activation_code } = body;
-
-    const newUser: { user: IUser; activationCode: string } = jwt.verify(
-      activation_token,
-      process.env.ACTIVATION_SECRET as string
-    ) as { user: IUser; activationCode: string };
-    if (newUser.activationCode !== activation_code) {
-      throw new ErrorHandler("Invalid activation code used", 400);
-    }
-    let {
-      email,
-      first_name,
-      surname,
-      user_password,
-      phone,
-      avatar_public_id,
-      avatar_url,
-    } = newUser.user;
+    let { email, first_name, surname, user_password, phone, dept_id } = body;
 
     const hashed_password = await bcrypt.hash(user_password, 10);
 
@@ -129,16 +24,15 @@ export const UserActivationService = async (
       surname,
       user_password,
       phone,
-      avatar_public_id,
-      avatar_url,
+      dept_id,
     };
+    const userRegistration = new UserModelOperations(user_data);
 
-    const userEntry = new UserModelOperations(user_data);
-    await userEntry.UserEntry();
-
-    return { first_name, surname };
+    await userRegistration.EmailQuery();
+    await userRegistration.PhoneQuery();
+    await userRegistration.UserCreation();
   } catch (error: any) {
-    logger.error(`Error while activating user account ${error.message}`);
+    logger.error(`Error while sending activation mail. ${error.message}`);
     throw new ErrorHandler(error.message, 500);
   }
 };

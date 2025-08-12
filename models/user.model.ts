@@ -17,6 +17,7 @@ export class UserModelOperations {
       avatar_public_id?: string;
       avatar_url?: string;
       user_role?: string;
+      dept_id?: string;
     }
   ) {
     this.user_data = user_data;
@@ -77,10 +78,10 @@ export class UserModelOperations {
     });
   };
 
-  UserEntry = () => {
+  UserCreation = () => {
     return new Promise((resolve, reject) => {
       pool.query(
-        `INSERT INTO users (email, first_name, surname, user_password, phone, avatar_public_id, avatar_url) VALUES ("${this.user_data.email}", "${this.user_data.first_name}", "${this.user_data.surname}", "${this.user_data.user_password}", "${this.user_data.phone}", "${this.user_data.avatar_public_id}", "${this.user_data.avatar_url}")`,
+        `INSERT INTO users (email, first_name, surname, user_password, phone, dept_id) VALUES ("${this.user_data.email}", "${this.user_data.first_name}", "${this.user_data.surname}", "${this.user_data.user_password}", "${this.user_data.phone}", "${this.user_data.dept_id}")`,
         async (err: any, result: any) => {
           if (err) {
             logger.error(err);
