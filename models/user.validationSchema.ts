@@ -22,11 +22,6 @@ export const UserRegistrationSchema = z.object({
   user_role: z.enum(roles).optional(),
 });
 
-export const UserActivationSchema = z.object({
-  activation_token: z.string(),
-  activation_code: z.string(),
-});
-
 export const UserLoginSchema = z.object({
   email: z.string().email(),
   user_password: z.string(),

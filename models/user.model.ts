@@ -1,7 +1,6 @@
 require("dotenv").config();
 import ErrorHandler from "../utils/Errorhandler";
 import { pool } from "../config/Database";
-import { IUser } from "../utils/user.types";
 import { logger } from "../utils/logger";
 
 export class UserModelOperations {

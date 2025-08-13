@@ -2,7 +2,7 @@ import {
   UserModelOperations,
   UserModelOperationsNoData,
 } from "../models/user.model";
-import { IUser } from "../utils/user.types";
+import { IUser } from "../utils/types";
 import ErrorHandler from "../utils/Errorhandler";
 import { logger } from "../utils/logger";
 import bcrypt from "bcryptjs";

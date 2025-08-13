@@ -2,7 +2,7 @@ require("dotenv").config();
 import { Response } from "express";
 import { redis } from "./Redis";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { IUser } from "../utils/user.types";
+import { IUser } from "./types";
 import { logger } from "./logger";
 import ErrorHandler from "./Errorhandler";
 

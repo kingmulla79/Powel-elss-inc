@@ -11,3 +11,14 @@ export interface IUser {
   user_role?: string;
   dept_id?: string;
 }
+
+export interface IJob {
+  job_title?: any;
+  job_type?: string;
+  job_description?: string;
+  priority?: string;
+  estimated_time?: string;
+  assigned_technician_id?: string;
+  scheduled_date?: string;
+  job_notes?: string;
+}

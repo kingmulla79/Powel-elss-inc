@@ -1,7 +1,6 @@
 import express from "express";
 import { authorizedRoles, isAuthenticated } from "../middleware/Auth";
 import {
-  validateActivationRequest,
   validateLoginRequest,
   validatePasswordRequest,
   validateProfilePicRequest,

@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { ErrorMiddleware } from "./middleware/Error";
 import UserRouter from "./routes/user.routes";
+import JobRouter from "./routes/jobs.routes";
 
 export const app = express();
 
@@ -19,6 +20,7 @@ app.use(
 );
 
 app.use("/api/auth", UserRouter);
+app.use("/api/jobs", JobRouter);
 
 app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
   const err = new Error(`Route ${req.originalUrl} not found`) as any;

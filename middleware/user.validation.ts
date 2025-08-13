@@ -2,7 +2,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import {
-  UserActivationSchema,
   UserLoginSchema,
   UserPasswordSchema,
   UserProfilePicSchema,
@@ -16,34 +15,6 @@ export const validateRegistrationRequest =
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       UserRegistrationSchema.parse(req.body);
-      next();
-    } catch (error) {
-      if (error instanceof ZodError) {
-        error.errors.map((e) => {
-          logger.error(e.message);
-        });
-        res.status(422).json({
-          success: false,
-          errors: error.errors.map((e) => ({
-            field: e.path.join("."),
-            message: e.message,
-          })),
-        });
-        return;
-      }
-
-      res.status(500).json({
-        success: false,
-        message: "Internal Server Error",
-      });
-    }
-  };
-
-export const validateActivationRequest =
-  () =>
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      UserActivationSchema.parse(req.body);
       next();
     } catch (error) {
       if (error instanceof ZodError) {
