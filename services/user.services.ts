@@ -8,7 +8,11 @@ import { logger } from "../utils/logger";
 import bcrypt from "bcryptjs";
 import { RefreshJWTTokens } from "../utils/jwt";
 import { redis } from "../utils/Redis";
-import { DeleteProfilePicture } from "../utils/cloudinary";
+import {
+  DeleteProfilePicture,
+  UploadProfilePicture,
+} from "../utils/cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 
 export const UserCreationService = async (body: IUser) => {
   try {
@@ -172,6 +176,35 @@ export const UserUpdateUserInfoService = async (body: {
     return user;
   } catch (error: any) {
     logger.error(`Error while updating user information: ${error.message}`);
+    throw new ErrorHandler(error.message, 500);
+  }
+};
+
+export const UserUpdateProfilePicService = async (
+  avatar: string,
+  user: any
+) => {
+  if (user.avatar_public_id) {
+    await DeleteProfilePicture(user.avatar_public_id, user.user_id);
+  }
+
+  const { avatar_public_id, avatar_url } = await UploadProfilePicture(avatar);
+
+  user.avatar_public_id = avatar_public_id;
+  user.avatar_url = avatar_url;
+
+  await redis.set(user.user_id, JSON.stringify(user));
+  const UpdateProfilePic = new UserModelOperations({
+    avatar_public_id,
+    avatar_url,
+    user_id: user.user_id,
+  });
+
+  await UpdateProfilePic.UserProfilePic();
+
+  try {
+  } catch (error: any) {
+    logger.error(`Error while updating user password: ${error.message}`);
     throw new ErrorHandler(error.message, 500);
   }
 };

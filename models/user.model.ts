@@ -129,6 +129,25 @@ export class UserModelOperations {
       );
     });
   };
+
+  UserProfilePic = () => {
+    return new Promise((resolve, reject) => {
+      pool.query(
+        `UPDATE users SET avatar_public_id = ?, avatar_url = ? WHERE user_id = ?`,
+        [
+          this.user_data.avatar_public_id,
+          this.user_data.avatar_url,
+          this.user_data.user_id,
+        ],
+        async (err, result: any) => {
+          if (err) {
+            reject(new ErrorHandler(err, 500));
+          }
+          resolve(result);
+        }
+      );
+    });
+  };
   UserUpdatePassword = () => {
     return new Promise((resolve, reject) => {
       pool.query(

@@ -13,11 +13,11 @@ import {
   UserUpdateUserInfoService,
   UserUpdateUserPasswordService,
   UserUpdateUserRoleService,
+  UserUpdateProfilePicService,
 } from "../services/user.services";
 import { logger } from "../utils/logger";
 import { refreshTokenOptions, sendToken } from "..//utils/jwt";
 import { redis } from "../utils/Redis";
-import { isAuthenticated } from "../middleware/Auth";
 
 export const UserCreationController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -140,6 +140,24 @@ export const UserUpdateUserInfoController = CatchAsyncError(
         success: true,
         message: "Information successfully updated",
         // user: user,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+export const UserUpdateProfilePicController = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await UserUpdateProfilePicService(req.body.avatar, req.user);
+
+      logger.info(
+        `Profile picture updated successfully for user by id: ${req.user?.user_id}`
+      );
+      res.status(201).json({
+        success: true,
+        message: `Profile picture updated successfully.`,
       });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));

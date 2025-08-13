@@ -4,6 +4,7 @@ import {
   validateActivationRequest,
   validateLoginRequest,
   validatePasswordRequest,
+  validateProfilePicRequest,
   validateRegistrationRequest,
   validateRoleRequest,
 } from "../middleware/user.validation";
@@ -19,6 +20,7 @@ import {
   UserUpdateUserInfoController,
   UserUpdateUserPasswordController,
   UserUpdateUserRoleController,
+  UserUpdateProfilePicController,
 } from "../controllers/user.controllers";
 
 const UserRouter = express.Router();
@@ -48,6 +50,13 @@ UserRouter.put(
   "/update-information",
   isAuthenticated,
   UserUpdateUserInfoController
+);
+
+UserRouter.put(
+  "/update-profile-pic",
+  validateProfilePicRequest(),
+  isAuthenticated,
+  UserUpdateProfilePicController
 );
 
 UserRouter.put(

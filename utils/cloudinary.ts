@@ -1,7 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import { logger } from "./logger";
 import ErrorHandler from "./Errorhandler";
-import { redis } from "./Redis";
 
 export async function DeleteProfilePicture(
   avatar_public_id: string,
@@ -10,6 +9,7 @@ export async function DeleteProfilePicture(
   await cloudinary.uploader
     .destroy(avatar_public_id)
     .then((result) => {
+      console.log(result);
       logger.info(
         `User: ${user_id} profile image successfully deleted from cloudinary`
       );
@@ -18,7 +18,19 @@ export async function DeleteProfilePicture(
       logger.error(`Error while deleting profile image from cloudinary`);
       throw new ErrorHandler(error.message, 500);
     });
-  await redis.del(user_id).then((result) => {
-    logger.info("User cache successfully cleared");
+}
+
+export async function UploadProfilePicture(
+  avatar: string
+): Promise<{ avatar_public_id: string; avatar_url: string }> {
+  let avatar_public_id = "";
+  let avatar_url = "";
+
+  const myCloud = await cloudinary.uploader.upload(avatar, {
+    folder: "avatars",
   });
+  avatar_public_id = myCloud.public_id;
+  avatar_url = myCloud.secure_url;
+
+  return { avatar_public_id, avatar_url };
 }
