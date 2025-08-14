@@ -3,7 +3,12 @@ import { z } from "zod";
 const passwordPattern: RegExp =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
-const roles = ["system_admin", "operations_manager", "admin"] as const;
+const roles = [
+  "system_admin",
+  "operations_manager",
+  "admin",
+  "technician",
+] as const;
 
 export const UserRegistrationSchema = z.object({
   first_name: z.string(),

@@ -1,19 +1,10 @@
-import {
-  UserModelOperations,
-  UserModelOperationsNoData,
-} from "../models/user.model";
-import { IJob, IUser } from "../utils/types";
+import { IJob } from "../utils/types";
 import ErrorHandler from "../utils/Errorhandler";
 import { logger } from "../utils/logger";
-import bcrypt from "bcryptjs";
-import { RefreshJWTTokens } from "../utils/jwt";
-import { redis } from "../utils/Redis";
 import {
-  DeleteProfilePicture,
-  UploadProfilePicture,
-} from "../utils/cloudinary";
-import { v2 as cloudinary } from "cloudinary";
-import { JobModelOperations } from "../models/jobs.models";
+  JobModelOperations,
+  JobModelOperationsNoData,
+} from "../models/jobs.models";
 
 export const JobCreationService = async (body: IJob) => {
   try {
@@ -26,22 +17,95 @@ export const JobCreationService = async (body: IJob) => {
   }
 };
 
-export const UserLoginService = async (user: {
-  email: string;
-  user_password: string;
-}): Promise<{ user_data: IUser }> => {
+export const JobFetchService = async (): Promise<{ jobData: Array<any> }> => {
   try {
-    const userLogin = new UserModelOperations(user);
+    let jobData: any;
+    const jobFetch = new JobModelOperationsNoData();
 
-    const user_data = await userLogin.UserLogin();
-    const password_match = await bcrypt.compare(
-      user.user_password,
-      user_data.user_password
+    await jobFetch
+      .AllJobs()
+      .then((results: any) => {
+        jobData = results;
+      })
+      .catch((error) => {
+        logger.error(`Error while getting all job data: ${error.message}`);
+        throw new ErrorHandler(error.message, 500);
+      });
+    return jobData;
+  } catch (error: any) {
+    logger.error(`Error while logging in user: ${error.message}`);
+    throw new ErrorHandler(error.message, 500);
+  }
+};
+
+export const JobByTechnicianService = async (
+  assigned_technician_id: string
+): Promise<{ technicianJobData: Array<any> }> => {
+  try {
+    let technicianJobData: any;
+    const technicianJobFetch = new JobModelOperations({
+      assigned_technician_id,
+    });
+
+    await technicianJobFetch
+      .AllTechnicianJobs()
+      .then((results: any) => {
+        technicianJobData = results;
+      })
+      .catch((error) => {
+        logger.error(`Error while getting all job data: ${error.message}`);
+        throw new ErrorHandler(error.message, 500);
+      });
+    return technicianJobData;
+  } catch (error: any) {
+    logger.error(`Error while logging in user: ${error.message}`);
+    throw new ErrorHandler(error.message, 500);
+  }
+};
+
+export const JobEditService = async (body: IJob) => {
+  try {
+    const jobEntrySearch = new JobModelOperationsNoData();
+
+    const jobData = await jobEntrySearch.JobFilter(
+      "job_id",
+      body.job_id ? body.job_id : ""
     );
-    if (!password_match) {
-      throw new ErrorHandler("Invalid email or password", 401);
+    const {
+      job_title,
+      job_type,
+      job_status,
+      job_description,
+      job_location,
+      priority,
+      estimated_time,
+      assigned_technician_id,
+      scheduled_date,
+      job_notes,
+    } = body;
+
+    console.log(jobData);
+    if (
+      job_title === jobData[0].job_title &&
+      job_type === jobData[0].job_type &&
+      job_status === jobData[0].job_status &&
+      job_description === jobData[0].job_description &&
+      job_location === jobData[0].job_location &&
+      priority === jobData[0].priority &&
+      estimated_time === jobData[0].estimated_time &&
+      assigned_technician_id?.toString() ===
+        jobData[0].assigned_technician_id?.toString() &&
+      scheduled_date === jobData[0].scheduled_date &&
+      job_notes === jobData[0].job_notes
+    ) {
+      throw new ErrorHandler(
+        `Updated job information cannot be the same as the available one`,
+        409
+      );
     }
-    return user_data;
+    const jobUpdate = new JobModelOperations(body);
+
+    await jobUpdate.JobUpdate();
   } catch (error: any) {
     logger.error(`Error while logging in user: ${error.message}`);
     throw new ErrorHandler(error.message, 500);

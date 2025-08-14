@@ -1,16 +1,42 @@
 import express from "express";
 import { authorizedRoles, isAuthenticated } from "../middleware/Auth";
-import { validateJobCreation } from "../middleware/jobs.validation";
-import { JobCreationController } from "../controllers/jobs.controllers";
+import { validateJobInformation } from "../middleware/jobs.validation";
+import {
+  JobByTechnicianController,
+  JobCreationController,
+  JobEditController,
+  JobFetchController,
+} from "../controllers/jobs.controllers";
 
 const JobRouter = express.Router();
 
 JobRouter.post(
   "/job-creation",
-  validateJobCreation(),
+  validateJobInformation(),
   isAuthenticated,
   authorizedRoles("system_admin", "operations_director", "admin"),
   JobCreationController
+);
+
+JobRouter.get(
+  "/all-jobs",
+  isAuthenticated,
+  authorizedRoles("system_admin", "operations_director", "admin"),
+  JobFetchController
+);
+JobRouter.get(
+  "/my-jobs/:technicianId",
+  isAuthenticated,
+  authorizedRoles("system_admin", "technician"),
+  JobByTechnicianController
+);
+
+JobRouter.put(
+  "/edit-jobs",
+  validateJobInformation(),
+  isAuthenticated,
+  authorizedRoles("system_admin", "operations_director"),
+  JobEditController
 );
 
 export default JobRouter;

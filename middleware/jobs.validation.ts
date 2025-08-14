@@ -1,17 +1,9 @@
-// middlewares/validateRequest.ts
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
-import {
-  UserLoginSchema,
-  UserPasswordSchema,
-  UserProfilePicSchema,
-  UserRegistrationSchema,
-  UserRoleSchema,
-} from "../models/user.validationSchema";
 import { logger } from "../utils/logger";
 import { JobCreationSchema } from "../models/jobs.validationSchema";
 
-export const validateJobCreation =
+export const validateJobInformation =
   () =>
   (req: Request, res: Response, next: NextFunction): void => {
     try {

@@ -150,8 +150,8 @@ export const UserUpdateUserInfoService = async (body: {
       user = result[0];
 
       if (
-        user.first_name === first_name ||
-        user.surname === surname ||
+        user.first_name === first_name &&
+        user.surname === surname &&
         user.phone === phone
       ) {
         throw new ErrorHandler(

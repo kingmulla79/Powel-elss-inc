@@ -13,9 +13,12 @@ export interface IUser {
 }
 
 export interface IJob {
-  job_title?: any;
+  job_id?: string;
+  job_title?: string;
   job_type?: string;
+  job_status?: string;
   job_description?: string;
+  job_location?: string;
   priority?: string;
   estimated_time?: string;
   assigned_technician_id?: string;
