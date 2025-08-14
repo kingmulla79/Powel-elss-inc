@@ -32,6 +32,7 @@ CREATE TABLE users (
 DROP TABLE users;
 SELECT * FROM users;
 TRUNCATE TABLE users;
+UPDATE users SET user_password = "$2b$10$kLBoU.nqoSd60iRUbkegO.QhXcoR.iIANpgbSFXmkCCCjXAaigSIK" WHERE user_id > 52;
 
 INSERT INTO users (first_name, surname, email, user_password, phone, avatar_public_id, avatar_url, user_role, dept_id)
 VALUES

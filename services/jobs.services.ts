@@ -5,6 +5,7 @@ import {
   JobModelOperations,
   JobModelOperationsNoData,
 } from "../models/jobs.models";
+import { format } from "date-fns";
 
 export const JobCreationService = async (body: IJob) => {
   try {
@@ -12,7 +13,7 @@ export const JobCreationService = async (body: IJob) => {
 
     await jobCreation.JobCreation();
   } catch (error: any) {
-    logger.error(`Error while sending activation mail. ${error.message}`);
+    logger.error(`Error while creating new job: ${error.message}`);
     throw new ErrorHandler(error.message, 500);
   }
 };
@@ -25,15 +26,22 @@ export const JobFetchService = async (): Promise<{ jobData: Array<any> }> => {
     await jobFetch
       .AllJobs()
       .then((results: any) => {
+        results.forEach((result: any) => {
+          const datetime = new Date(result.scheduled_date);
+          const datePart = format(datetime, "yyyy-MM-dd"); // "2025-09-20"
+          const timePart = format(datetime, "HH:mm:ss");
+          result.scheduled_date = datePart;
+          result.scheduled_time = timePart;
+        });
         jobData = results;
       })
       .catch((error) => {
-        logger.error(`Error while getting all job data: ${error.message}`);
+        logger.error(`Error while fetching job information: ${error.message}`);
         throw new ErrorHandler(error.message, 500);
       });
     return jobData;
   } catch (error: any) {
-    logger.error(`Error while logging in user: ${error.message}`);
+    logger.error(`Error while fetching job information: ${error.message}`);
     throw new ErrorHandler(error.message, 500);
   }
 };
@@ -53,17 +61,21 @@ export const JobByTechnicianService = async (
         technicianJobData = results;
       })
       .catch((error) => {
-        logger.error(`Error while getting all job data: ${error.message}`);
+        logger.error(
+          `Error while fetching jobs by tecnician - ${assigned_technician_id} : ${error.message}`
+        );
         throw new ErrorHandler(error.message, 500);
       });
     return technicianJobData;
   } catch (error: any) {
-    logger.error(`Error while logging in user: ${error.message}`);
+    logger.error(
+      `Error while fetching jobs by tecnician - ${assigned_technician_id} : ${error.message}`
+    );
     throw new ErrorHandler(error.message, 500);
   }
 };
 
-export const JobEditService = async (body: IJob) => {
+export const JobEditService = async (body: IJob, user_role: string) => {
   try {
     const jobEntrySearch = new JobModelOperationsNoData();
 
@@ -84,7 +96,6 @@ export const JobEditService = async (body: IJob) => {
       job_notes,
     } = body;
 
-    console.log(jobData);
     if (
       job_title === jobData[0].job_title &&
       job_type === jobData[0].job_type &&
@@ -103,11 +114,32 @@ export const JobEditService = async (body: IJob) => {
         409
       );
     }
+    if (
+      (job_status === "assigned" && user_role !== "system_admin") ||
+      "admin" ||
+      "operations_manager"
+    ) {
+      throw new ErrorHandler(
+        `Unauthorized operations for user role: ${user_role}`,
+        401
+      );
+    }
     const jobUpdate = new JobModelOperations(body);
 
     await jobUpdate.JobUpdate();
   } catch (error: any) {
-    logger.error(`Error while logging in user: ${error.message}`);
+    logger.error(`Error while updating job information: ${error.message}`);
+    throw new ErrorHandler(error.message, 500);
+  }
+};
+
+export const JobDeleteService = async (job_id: string) => {
+  try {
+    const jobDelete = new JobModelOperationsNoData();
+
+    await jobDelete.DeleteJob(job_id);
+  } catch (error: any) {
+    logger.error(`Error while deleting job - ${job_id}: ${error.message}`);
     throw new ErrorHandler(error.message, 500);
   }
 };

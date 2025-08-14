@@ -116,11 +116,11 @@ export class JobModelOperationsNoData {
     });
   };
 
-  DeleteUser = (user_id: number) => {
+  DeleteJob = (job_id: string) => {
     return new Promise((resolve, reject) => {
       pool.query(
-        `DELETE FROM users WHERE user_id = ?`,
-        [user_id],
+        `DELETE FROM jobs WHERE job_id = ?`,
+        [job_id],
         async (err, results: any) => {
           if (err) {
             reject(new ErrorHandler(err, 500));

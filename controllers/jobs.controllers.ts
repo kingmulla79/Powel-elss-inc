@@ -7,6 +7,7 @@ import { logger } from "../utils/logger";
 import {
   JobByTechnicianService,
   JobCreationService,
+  JobDeleteService,
   JobEditService,
   JobFetchService,
 } from "../services/jobs.services";
@@ -70,13 +71,33 @@ export const JobByTechnicianController = CatchAsyncError(
 export const JobEditController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await JobEditService(req.body);
+      await JobEditService(req.body, req.user?.user_role || "");
       res.status(200).json({
         success: true,
         message: `Job ${req.body.job_id} successfully edited by : ${req.user?.user_id}`,
       });
       logger.info(
         `Job ${req.body.job_id} successfully edited by : ${req.user?.user_id}`
+      );
+    } catch (error: any) {
+      if (error) {
+        return next(new ErrorHandler(error.message, 500));
+      }
+    }
+  }
+);
+
+export const JobDeleteController = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { job_id } = req.params;
+      await JobDeleteService(job_id);
+      res.status(200).json({
+        success: true,
+        message: `Job ${job_id} successfully deleted by : ${req.user?.user_id}`,
+      });
+      logger.info(
+        `Job ${job_id} successfully deleted by : ${req.user?.user_id}`
       );
     } catch (error: any) {
       if (error) {

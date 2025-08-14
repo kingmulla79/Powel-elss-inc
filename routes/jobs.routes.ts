@@ -4,6 +4,7 @@ import { validateJobInformation } from "../middleware/jobs.validation";
 import {
   JobByTechnicianController,
   JobCreationController,
+  JobDeleteController,
   JobEditController,
   JobFetchController,
 } from "../controllers/jobs.controllers";
@@ -35,8 +36,14 @@ JobRouter.put(
   "/edit-jobs",
   validateJobInformation(),
   isAuthenticated,
-  authorizedRoles("system_admin", "operations_director"),
+  authorizedRoles("system_admin", "operations_director", "admin", "technician"),
   JobEditController
+);
+JobRouter.delete(
+  "/delete-job/:job_id",
+  isAuthenticated,
+  authorizedRoles("system_admin", "operations_director", "admin"),
+  JobDeleteController
 );
 
 export default JobRouter;
