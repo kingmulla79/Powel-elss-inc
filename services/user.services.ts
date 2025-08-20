@@ -12,11 +12,18 @@ import {
   DeleteProfilePicture,
   UploadProfilePicture,
 } from "../utils/cloudinary";
-import { v2 as cloudinary } from "cloudinary";
 
 export const UserCreationService = async (body: IUser) => {
   try {
-    let { email, first_name, surname, user_password, phone, dept_id } = body;
+    let {
+      email,
+      first_name,
+      surname,
+      user_password,
+      user_role,
+      phone,
+      dept_id,
+    } = body;
 
     const hashed_password = await bcrypt.hash(user_password, 10);
 
@@ -28,6 +35,7 @@ export const UserCreationService = async (body: IUser) => {
       surname,
       user_password,
       phone,
+      user_role,
       dept_id,
     };
     const userRegistration = new UserModelOperations(user_data);

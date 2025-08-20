@@ -1,6 +1,3 @@
-DROP DATABASE IF EXISTS powel_elss_inc;
-CREATE DATABASE powel_elss_inc;
-
 USE powel_elss_inc;
 
 SHOW TABLES;
@@ -29,15 +26,11 @@ CREATE TABLE users (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (dept_id) REFERENCES department(dept_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
-DROP TABLE users;
-SELECT * FROM users;
-TRUNCATE TABLE users;
-UPDATE users SET user_password = "$2b$10$kLBoU.nqoSd60iRUbkegO.QhXcoR.iIANpgbSFXmkCCCjXAaigSIK" WHERE user_id > 52;
 
 INSERT INTO users (first_name, surname, email, user_password, phone, avatar_public_id, avatar_url, user_role, dept_id)
 VALUES
 ("Thomas", "Odhiambo", "thomasodhiambo800@gmail.com","$2b$10$kLBoU.nqoSd60iRUbkegO.QhXcoR.iIANpgbSFXmkCCCjXAaigSIK", "0740455275", null, null, "system_admin", 1),
-('Megan', 'Chang', 'megan.chang1@example.com', '#5FtME7xKS*M', '+25472762998', '1a0d263c-8840-44d4-8ca5-1e8c2e13aafd', 'https://www.lorempixel.com/417/201', 'admin', 1),
+('Megan', 'Chang', 'megan.chang1@example.com', '#5FtME7xKS*M', '+25472762998', null, null, 'admin', 1),
 ('Robert', 'Green', 'robert.green2@example.com', '3&ZJhGU*+K$t', '+25478507386', 'c7daa256-9816-4da4-b77d-8032d0b61120', 'https://www.lorempixel.com/726/605', 'admin', 1),
 ('William', 'Sullivan', 'william.sullivan3@example.com', '!z31e*q9kPg=', '+25478943213', 'e6c906ed-b83f-424f-90f2-1922ae07d53e', 'https://dummyimage.com/308x918', 'admin', 1),
 ('Kristen', 'Turner', 'kristen.turner4@example.com', 'TSHTDRwooUXK', '+25470789889', '1e6b3ff3-6661-4978-8f73-42bd06258a54', 'https://dummyimage.com/799x500', 'admin', 1),
@@ -80,15 +73,13 @@ VALUES
 ('Rachael', 'Leblanc', 'rachael.leblanc41@example.com', 'p*L6+rkrDUkL', '+25479605439', 'f2e3ed2f-21e4-42e4-b754-aa7b34169d4b', 'https://dummyimage.com/768x266', 'admin', 2),
 ('Amber', 'Myers', 'amber.myers42@example.com', 'YL_Kx#tT1!7D', '+25470079347', '32deea5a-ad55-4199-8eb0-741a7c2543ee', 'https://dummyimage.com/331x366', 'admin', 2),
 ('Janet', 'Hill', 'janet.hill43@example.com', 'AmbReVALesa)', '+25473836194', 'ed13d52f-9b86-43e6-9825-d29b48dbdeaa', 'https://www.lorempixel.com/466/419', 'admin', 2),
-('Lisa', 'Atkinson', 'lisa.atkinson44@example.com', 'ny-4DFuO30Jd', '+25479430185', 'e112c11c-df4e-4764-ad90-9cb572727e50', 'https://dummyimage.com/816x251', 'admin', 2),
+('Lisa', 'Atkinson', 'lisa.atkinson44@example.com', 'ny-4DFuO30Jd', '+25479430185', null, null, 'admin', 2),
 ('Patty', 'Lawrence', 'patty.lawrence45@example.com', 'gs!n)_&4@Q2G', '+25478167603', '97876d87-b4fa-428a-812b-1083e1b8911c', 'https://dummyimage.com/850x485', 'admin', 2),
 ('Stephanie', 'Riley', 'stephanie.riley46@example.com', 'c(cgwlrB3EuL', '+25473395975', 'ca92e8f1-e4e8-448b-9846-85ccb5c1ac0b', 'https://placeimg.com/803/139/any', 'admin', 2),
 ('Shannon', 'Keller', 'shannon.keller47@example.com', 'I2ELb4cZS6w0', '+25472539925', 'c20b2eea-117c-4a2c-be93-25576764af39', 'https://placeimg.com/924/348/any', 'admin', 2),
 ('Wendy', 'Stark', 'wendy.stark48@example.com', 'S2ZA*&z4a!Q_', '+25473637690', '4447a149-e474-49da-9065-b626c0fd0d78', 'https://www.lorempixel.com/682/144', 'admin', 2),
 ('Laura', 'Miller', 'laura.miller49@example.com', 'Hza2*YYtUf)v', '+25478506596', 'd734b424-87be-4632-8fd8-b6b0070d985f', 'https://dummyimage.com/719x493', 'admin', 2),
-('Chloe', 'Tucker', 'chloe.tucker50@example.com', '5uvG=2)OQ=o7', '+25477871695', '7b2fd3ec-aab8-408c-9400-384e5d73df46', 'https://placeimg.com/575/137/any', 'system_admin', 2);
-
-SELECT u.user_id, u.first_name, u.surname, u.email, u.user_password, u.phone, u.avatar_public_id, u.avatar_url, u.user_role, u.created_at, u.updated_at, d.dept_id, d.dept_name  FROM users u JOIN department d ON u.dept_id = d.dept_id;
+('Chloe', 'Tucker', 'chloe.tucker50@example.com', '5uvG=2)OQ=o7', '+25477871695', null, null, 'system_admin', 2);
 
 CREATE TABLE jobs (
     job_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -107,9 +98,6 @@ CREATE TABLE jobs (
     FOREIGN KEY (assigned_technician_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-SELECT * FROM jobs;
-DROP TABLE jobs;
-SELECT j.job_id, j.job_title, j.job_type, j.job_status, j.job_description, j.job_location, j.priority, j.estimated_time, j.scheduled_date, j.job_notes, j.assigned_technician_id, u.first_name as `technician_first_name`, u.surname as `technician_surname`, j.created_at, j.updated_at  FROM jobs j JOIN users u ON j.assigned_technician_id = u.user_id;
 
 INSERT INTO jobs (
     job_title, job_type, job_status, job_description, job_location, priority,
