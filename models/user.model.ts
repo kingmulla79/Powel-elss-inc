@@ -2,25 +2,10 @@ require("dotenv").config();
 import ErrorHandler from "../utils/Errorhandler";
 import { pool } from "../config/Database";
 import { logger } from "../utils/logger";
+import { IUser } from "../utils/types";
 
 export class UserModelOperations {
-  constructor(
-    private user_data: {
-      user_id?: any;
-      first_name?: string;
-      surname?: string;
-      email?: string;
-      user_password?: string;
-      phone?: string;
-      avatar?: string;
-      avatar_public_id?: string;
-      avatar_url?: string;
-      user_role?: string;
-      dept_id?: string;
-    }
-  ) {
-    this.user_data = user_data;
-  }
+  constructor(private user_data: Partial<IUser>) {}
 
   EmailQuery = () => {
     return new Promise((resolve, reject) => {

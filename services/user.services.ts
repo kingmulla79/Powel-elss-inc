@@ -13,7 +13,18 @@ import {
   UploadProfilePicture,
 } from "../utils/cloudinary";
 
-export const UserCreationService = async (body: IUser) => {
+export const UserCreationService = async (
+  body: Pick<
+    IUser,
+    | "email"
+    | "first_name"
+    | "surname"
+    | "user_password"
+    | "user_role"
+    | "phone"
+    | "dept_id"
+  >
+) => {
   try {
     let {
       email,
