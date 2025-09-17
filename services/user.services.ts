@@ -55,7 +55,11 @@ export const UserCreationService = async (
     await userRegistration.PhoneQuery();
     await userRegistration.UserCreation();
   } catch (error: any) {
-    logger.error(`Error while sending activation mail. ${error.message}`);
+    logger.error(`Error while creating user: ${error.message}`, {
+      user_name: `${body.first_name} ${body.surname}`,
+      action: "User account creation",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
@@ -77,16 +81,24 @@ export const UserLoginService = async (user: {
     }
     return user_data;
   } catch (error: any) {
-    logger.error(`Error while logging in user: ${error.message}`);
+    logger.error(`Error while logging in user: ${error.message}`, {
+      user_email: `${user.email}`,
+      action: "Login",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
 
-export const UserLogoutService = async (user_id: string) => {
+export const UserLogoutService = async (user: Partial<IUser>) => {
   try {
-    await redis.del(user_id);
+    await redis.del(user.user_id);
   } catch (error: any) {
-    logger.error(`Error while logging out user: ${error.message}`);
+    logger.error(`Error while logging out user: ${error.message}`, {
+      user_id: `${user.user_id}`,
+      action: "Logout",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
@@ -102,29 +114,41 @@ export const UserUpdateAuthTokenService = async (
     return { accessToken, refreshToken, user };
   } catch (error: any) {
     logger.error(
-      `Error while updating access and refresh tokens: ${error.message}`
+      `Error while updating access and refresh tokens: ${error.message}`,
+      {
+        action: "Authentication token refresh",
+        status: "failed",
+      }
     );
     throw new ErrorHandler(error.message, 500);
   }
 };
 
 export const UserGetUserInfoService = async (
-  user_id: string
+  user_data: Partial<IUser>
 ): Promise<{ user: IUser }> => {
   try {
     let user;
-    const UserJSON = await redis.get(user_id);
+    const UserJSON = await redis.get(user_data.user_id);
     if (UserJSON) {
       user = JSON.parse(UserJSON);
     }
     return user;
   } catch (error: any) {
-    logger.error(`Error while getting user information: ${error.message}`);
+    logger.error(`Error while getting user information: ${error.message}`, {
+      user_id: `${user_data.user_id}`,
+      user_name: `${user_data.first_name} ${user_data.surname}`,
+      user_role: `${user_data.user_id}`,
+      action: "User information fetch",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
 
-export const UserGetAllUserInfoService = async (): Promise<{
+export const UserGetAllUserInfoService = async (
+  user_data: Partial<IUser>
+): Promise<{
   userData: Array<any>;
 }> => {
   try {
@@ -137,23 +161,39 @@ export const UserGetAllUserInfoService = async (): Promise<{
       })
       .catch((error) => {
         logger.error(
-          `Error while getting all user information: ${error.message}`
+          `Error while getting all user information: ${error.message}`,
+          {
+            user_id: `${user_data.user_id}`,
+            user_name: `${user_data.first_name} ${user_data.surname}`,
+            user_role: `${user_data.user_id}`,
+            action: "All user information fetch",
+            status: "failed",
+          }
         );
         throw new ErrorHandler(error.message, 500);
       });
     return userData;
   } catch (error: any) {
-    logger.error(`Error while getting all user information: ${error.message}`);
+    logger.error(`Error while getting all user information: ${error.message}`, {
+      user_id: `${user_data.user_id}`,
+      user_name: `${user_data.first_name} ${user_data.surname}`,
+      user_role: `${user_data.user_id}`,
+      action: "All user information fetch",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
 
-export const UserUpdateUserInfoService = async (body: {
-  first_name?: string;
-  surname?: string;
-  phone?: string;
-  user_id: string;
-}): Promise<any> => {
+export const UserUpdateUserInfoService = async (
+  user_data: Partial<IUser>,
+  body: {
+    first_name?: string;
+    surname?: string;
+    phone?: string;
+    user_id: string;
+  }
+): Promise<any> => {
   try {
     let { first_name, surname, phone, user_id } = body;
 
@@ -186,7 +226,14 @@ export const UserUpdateUserInfoService = async (body: {
 
       await userUpdate.UserUpdateInfo().catch((error) => {
         logger.error(
-          `Error while running sql operation to update user information: ${error.message}`
+          `Error while running sql operation to update user information: ${error.message}`,
+          {
+            user_id: `${user_data.user_id}`,
+            user_name: `${user_data.first_name} ${user_data.surname}`,
+            user_role: `${user_data.user_id}`,
+            action: "User information update",
+            status: "failed",
+          }
         );
         throw new ErrorHandler(error.message, 500);
       });
@@ -194,48 +241,60 @@ export const UserUpdateUserInfoService = async (body: {
 
     return user;
   } catch (error: any) {
-    logger.error(`Error while updating user information: ${error.message}`);
+    logger.error(`Error while updating user information: ${error.message}`, {
+      user_id: `${user_data.user_id}`,
+      user_name: `${user_data.first_name} ${user_data.surname}`,
+      user_role: `${user_data.user_id}`,
+      action: "User information update",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
 
 export const UserUpdateProfilePicService = async (
-  avatar: string,
-  user: any
+  user_data: Partial<IUser>,
+  avatar: string
 ) => {
-  if (user.avatar_public_id) {
-    await DeleteProfilePicture(user.avatar_public_id, user.user_id);
+  if (user_data.avatar_public_id) {
+    await DeleteProfilePicture(user_data.avatar_public_id, user_data.user_id);
   }
 
   const { avatar_public_id, avatar_url } = await UploadProfilePicture(avatar);
 
-  user.avatar_public_id = avatar_public_id;
-  user.avatar_url = avatar_url;
+  user_data.avatar_public_id = avatar_public_id;
+  user_data.avatar_url = avatar_url;
 
-  await redis.set(user.user_id, JSON.stringify(user));
+  await redis.set(user_data.user_id, JSON.stringify(user_data));
   const UpdateProfilePic = new UserModelOperations({
     avatar_public_id,
     avatar_url,
-    user_id: user.user_id,
+    user_id: user_data.user_id,
   });
 
   await UpdateProfilePic.UserProfilePic();
 
   try {
   } catch (error: any) {
-    logger.error(`Error while updating user password: ${error.message}`);
+    logger.error(`Error while updating user password: ${error.message}`, {
+      user_id: `${user_data.user_id}`,
+      user_name: `${user_data.first_name} ${user_data.surname}`,
+      user_role: `${user_data.user_id}`,
+      action: "Profile picture update",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
 
 export const UserUpdateUserPasswordService = async (
   body: { oldPassword: string; newPassword: string },
-  user_id: string
+  user_data: Partial<IUser>
 ) => {
   try {
     const { oldPassword, newPassword } = body;
 
-    const UserJSON = await redis.get(user_id);
+    const UserJSON = await redis.get(user_data.user_id);
     if (UserJSON) {
       let user: IUser = JSON.parse(UserJSON);
       const isPasswordMatch = await bcrypt.compare(
@@ -243,11 +302,23 @@ export const UserUpdateUserPasswordService = async (
         user.user_password
       );
       if (!isPasswordMatch) {
-        logger.error("Invalid old password");
+        logger.error("Invalid old password", {
+          user_id: `${user_data.user_id}`,
+          user_name: `${user_data.first_name} ${user_data.surname}`,
+          user_role: `${user_data.user_id}`,
+          action: "Password update",
+          status: "failed",
+        });
         throw new ErrorHandler("Invalid old password", 409);
       }
       if (isPasswordMatch && oldPassword === newPassword) {
-        logger.error(`The old and new passwords cannot be the same`);
+        logger.error(`The old and new passwords cannot be the same`, {
+          user_id: `${user_data.user_id}`,
+          user_name: `${user_data.first_name} ${user_data.surname}`,
+          user_role: `${user_data.user_id}`,
+          action: "Password update",
+          status: "failed",
+        });
         throw new ErrorHandler(
           `The old and new passwords cannot be the same`,
           409
@@ -259,15 +330,24 @@ export const UserUpdateUserPasswordService = async (
       await passwordUpdate.UserUpdatePassword();
     }
   } catch (error: any) {
-    logger.error(`Error while updating user password: ${error.message}`);
+    logger.error(`Error while updating user password: ${error.message}`, {
+      user_id: `${user_data.user_id}`,
+      user_name: `${user_data.first_name} ${user_data.surname}`,
+      user_role: `${user_data.user_id}`,
+      action: "Password information update",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
 
-export const UserUpdateUserRoleService = async (body: {
-  email: string;
-  role: string;
-}): Promise<{ updated_user_id: any }> => {
+export const UserUpdateUserRoleService = async (
+  user_data: Partial<IUser>,
+  body: {
+    email: string;
+    role: string;
+  }
+): Promise<{ updated_user_id: any }> => {
   try {
     let updated_user_id;
     const { email, role } = body;
@@ -277,7 +357,16 @@ export const UserUpdateUserRoleService = async (body: {
     await userUpdate.UserByEmail(email).then(async (result: any) => {
       const userID = result[0].user_id;
       if (role == result[0].user_role) {
-        logger.error(`The user role and desired update role must be different`);
+        logger.error(
+          `The user role and desired update role must be different`,
+          {
+            user_id: `${user_data.user_id}`,
+            user_name: `${user_data.first_name} ${user_data.surname}`,
+            user_role: `${user_data.user_id}`,
+            action: "User role update",
+            status: "failed",
+          }
+        );
         throw new ErrorHandler(
           `The user role and desired update role must be different`,
           400
@@ -288,12 +377,21 @@ export const UserUpdateUserRoleService = async (body: {
     });
     return { updated_user_id };
   } catch (error: any) {
-    logger.error(`Error while updating user password: ${error.message}`);
+    logger.error(`Error while updating user password: ${error.message}`, {
+      user_id: `${user_data.user_id}`,
+      user_name: `${user_data.first_name} ${user_data.surname}`,
+      user_role: `${user_data.user_id}`,
+      action: "User role update",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
 
-export const UserDeleteUserService = async (user_id: string) => {
+export const UserDeleteUserService = async (
+  user_data: Partial<IUser>,
+  user_id: string
+) => {
   try {
     const deleteUser = new UserModelOperationsNoData();
 
@@ -307,10 +405,22 @@ export const UserDeleteUserService = async (user_id: string) => {
     });
 
     await deleteUser.DeleteUser(parseInt(user_id)).then((result) => {
-      logger.info(`The user by id ${user_id} successfully deleted`);
+      logger.info(`The user by id ${user_id} successfully deleted`, {
+        user_id: `${user_data.user_id}`,
+        user_name: `${user_data.first_name} ${user_data.surname}`,
+        user_role: `${user_data.user_id}`,
+        action: "User role update",
+        status: "failed",
+      });
     });
   } catch (error: any) {
-    logger.error(`Error while deleting user information: ${error.message}`);
+    logger.error(`Error while deleting user information: ${error.message}`, {
+      user_id: `${user_data.user_id}`,
+      user_name: `${user_data.first_name} ${user_data.surname}`,
+      user_role: `${user_data.user_id}`,
+      action: "User role update",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };

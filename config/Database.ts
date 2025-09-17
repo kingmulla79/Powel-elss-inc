@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 import mysql, { PoolOptions } from "mysql2";
 import { Pool } from "mysql2/typings/mysql/lib/Pool";
 import { logger } from "../utils/logger";

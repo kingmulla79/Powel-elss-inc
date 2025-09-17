@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 import ErrorHandler from "../utils/Errorhandler";
 import { pool } from "../config/Database";
 import { logger } from "../utils/logger";

@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 import nodemailer, { Transporter } from "nodemailer";
 import ejs from "ejs";
 import path from "path";

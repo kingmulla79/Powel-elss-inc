@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 import { Request, Response, NextFunction } from "express";
 import ErrorHandler from "../utils/Errorhandler";
 import { CatchAsyncError } from "../middleware/CatchAsyncErrors";

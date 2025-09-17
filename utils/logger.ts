@@ -30,6 +30,6 @@ export const logger = winston.createLogger({
     }),
   ],
   defaultMeta: {
-    service: "Authentication microservice",
+    service: "Powel-elss-inc. logger system",
   },
 });

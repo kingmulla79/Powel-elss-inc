@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 import { Response } from "express";
 import { redis } from "./Redis";
 import jwt, { JwtPayload } from "jsonwebtoken";
@@ -78,7 +78,14 @@ export const sendToken = (user: any, statusCode: number, res: Response) => {
   res.cookie("refresh_token", refreshToken, refreshTokenOptions);
 
   logger.info(
-    `User ${user.first_name} ${user.surname}, id number ${user.user_id} logged in. Access and refresh tokens generated`
+    `User ${user.first_name} ${user.surname}, id number ${user.user_id} logged in. Access and refresh tokens generated`,
+    {
+      user_id: `${user.user_id}`,
+      user_name: `${user.first_name} ${user.surname}`,
+      user_role: `${user.user_id}`,
+      action: "Login",
+      status: "success",
+    }
   );
   res.status(statusCode).json({
     success: true,
