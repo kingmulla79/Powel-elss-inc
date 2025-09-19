@@ -12,6 +12,8 @@ import {
   DeleteProfilePicture,
   UploadProfilePicture,
 } from "../utils/cloudinary";
+import { NotificationCreation } from "../controllers/notifications.controllers";
+import { INotifications } from "../models/notification.model";
 
 export const UserCreationService = async (
   body: Pick<
@@ -403,7 +405,18 @@ export const UserDeleteUserService = async (
         );
       }
     });
-
+    const notification: INotifications = {
+      message: `User by id ${user_id} successfully deleted by ${user_data.user_id} - ${user_data.surname}`,
+      not_status: "unread",
+      title: "User account deletion",
+      user_id: user_data.user_id,
+    };
+    NotificationCreation(
+      notification.title,
+      notification.message,
+      notification.not_status,
+      notification.user_id
+    );
     await deleteUser.DeleteUser(parseInt(user_id)).then((result) => {
       logger.info(`The user by id ${user_id} successfully deleted`, {
         user_id: `${user_data.user_id}`,
