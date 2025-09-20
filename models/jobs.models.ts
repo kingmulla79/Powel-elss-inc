@@ -29,7 +29,10 @@ export class JobModelOperations {
         `INSERT INTO jobs (job_title, job_type, job_status, job_description, job_location, priority, estimated_time, assigned_technician_id, scheduled_date, job_notes) VALUES ("${this.job_data.job_title}", "${this.job_data.job_type}", "${this.job_data.job_status}", "${this.job_data.job_description}", "${this.job_data.job_location}", "${this.job_data.priority}", "${this.job_data.estimated_time}", "${this.job_data.assigned_technician_id}", "${this.job_data.scheduled_date}", "${this.job_data.job_notes}")`,
         async (err: any, result: any) => {
           if (err) {
-            logger.error(err);
+            logger.error(err, {
+              action: "Job creation",
+              status: "failed",
+            });
             reject(new ErrorHandler(err, 400));
           } else {
             resolve(result);
@@ -88,11 +91,7 @@ export class JobModelOperationsNoData {
           if (err) {
             reject(new ErrorHandler(err, 500));
           }
-          if (results.length <= 0) {
-            reject(
-              new ErrorHandler("There are no jobs yet in the database", 422)
-            );
-          }
+
           resolve(results);
         }
       );

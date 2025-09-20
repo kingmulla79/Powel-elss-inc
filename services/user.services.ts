@@ -12,7 +12,7 @@ import {
   DeleteProfilePicture,
   UploadProfilePicture,
 } from "../utils/cloudinary";
-import { NotificationCreation } from "../controllers/notifications.controllers";
+import { NotificationCreation } from "./notification.services";
 import { INotifications } from "../models/notification.model";
 
 export const UserCreationService = async (
@@ -405,7 +405,7 @@ export const UserDeleteUserService = async (
         );
       }
     });
-    const notification: INotifications = {
+    const notification: Omit<INotifications, "not_id"> = {
       message: `User by id ${user_id} successfully deleted by ${user_data.user_id} - ${user_data.surname}`,
       not_status: "unread",
       title: "User account deletion",
@@ -423,7 +423,7 @@ export const UserDeleteUserService = async (
         user_name: `${user_data.first_name} ${user_data.surname}`,
         user_role: `${user_data.user_id}`,
         action: "User role update",
-        status: "failed",
+        status: "success",
       });
     });
   } catch (error: any) {

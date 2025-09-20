@@ -13,7 +13,10 @@ export const JobCreationService = async (body: IJob) => {
 
     await jobCreation.JobCreation();
   } catch (error: any) {
-    logger.error(`Error while creating new job: ${error.message}`);
+    logger.error(`Error while creating new job: ${error.message}`, {
+      action: "Job creation",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
@@ -36,12 +39,18 @@ export const JobFetchService = async (): Promise<{ jobData: Array<any> }> => {
         jobData = results;
       })
       .catch((error) => {
-        logger.error(`Error while fetching job information: ${error.message}`);
+        logger.error(`Error while fetching job information: ${error.message}`, {
+          action: "Job information fetch",
+          status: "failed",
+        });
         throw new ErrorHandler(error.message, 500);
       });
     return jobData;
   } catch (error: any) {
-    logger.error(`Error while fetching job information: ${error.message}`);
+    logger.error(`Error while fetching job information: ${error.message}`, {
+      action: "Job information fetch",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
@@ -62,14 +71,22 @@ export const JobByTechnicianService = async (
       })
       .catch((error) => {
         logger.error(
-          `Error while fetching jobs by tecnician - ${assigned_technician_id} : ${error.message}`
+          `Error while fetching jobs by tecnician - ${assigned_technician_id} : ${error.message}`,
+          {
+            action: "Technician job information fetch",
+            status: "failed",
+          }
         );
         throw new ErrorHandler(error.message, 500);
       });
     return technicianJobData;
   } catch (error: any) {
     logger.error(
-      `Error while fetching jobs by tecnician - ${assigned_technician_id} : ${error.message}`
+      `Error while fetching jobs by tecnician - ${assigned_technician_id} : ${error.message}`,
+      {
+        action: "Technician job information fetch",
+        status: "failed",
+      }
     );
     throw new ErrorHandler(error.message, 500);
   }
@@ -128,7 +145,10 @@ export const JobEditService = async (body: IJob, user_role: string) => {
 
     await jobUpdate.JobUpdate();
   } catch (error: any) {
-    logger.error(`Error while updating job information: ${error.message}`);
+    logger.error(`Error while updating job information: ${error.message}`, {
+      action: "Job information update",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
@@ -139,7 +159,10 @@ export const JobDeleteService = async (job_id: string) => {
 
     await jobDelete.DeleteJob(job_id);
   } catch (error: any) {
-    logger.error(`Error while deleting job - ${job_id}: ${error.message}`);
+    logger.error(`Error while deleting job - ${job_id}: ${error.message}`, {
+      action: "Job deletion",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };

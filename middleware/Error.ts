@@ -28,7 +28,10 @@ export const ErrorMiddleware = (
     const message = `Your URL token is expired. Please login again.`;
     err = new ErrorHandler(message, 400);
   }
-  logger.error(err.message);
+  logger.error(err.message, {
+    action: "User request error",
+    status: "failed",
+  });
   res.status(err.statusCode).json({
     success: false,
     message: err.message,

@@ -12,7 +12,10 @@ export const validateJobInformation =
     } catch (error) {
       if (error instanceof ZodError) {
         error.errors.map((e) => {
-          logger.error(e.message);
+          logger.error(e.message, {
+            action: "Job data verification",
+            status: "failed",
+          });
         });
         res.status(422).json({
           success: false,

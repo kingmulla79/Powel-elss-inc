@@ -17,7 +17,10 @@ export const connectUserDatabase = async () => {
 
     return pool;
   } catch (error: any) {
-    logger.error(error.message);
+    logger.error(error.message, {
+      action: "Database connection",
+      status: "failed",
+    });
     setTimeout(connectUserDatabase, 5000);
   }
 };

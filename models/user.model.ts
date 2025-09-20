@@ -12,14 +12,21 @@ export class UserModelOperations {
       pool.query(
         "SELECT * FROM users WHERE email = ?",
         [this.user_data.email],
-        (err, result: Array<any>) => {
+        (err: any, result: Array<any>) => {
           if (err) {
-            logger.error(err);
+            logger.error(err, {
+              action: "Email query",
+              status: "failed",
+            });
             reject(new ErrorHandler(err, 400));
           }
           if (result.length > 0) {
             logger.error(
-              "The email is already in use. Please choose another one"
+              "The email is already in use. Please choose another one",
+              {
+                action: "Email query",
+                status: "failed",
+              }
             );
             reject(
               new ErrorHandler(
@@ -40,14 +47,21 @@ export class UserModelOperations {
       pool.query(
         "SELECT * FROM users WHERE phone = ?",
         [this.user_data.phone],
-        (err, result: Array<any>) => {
+        (err: any, result: Array<any>) => {
           if (err) {
-            logger.error(err);
+            logger.error(err, {
+              action: "Phone query",
+              status: "failed",
+            });
             reject(new ErrorHandler(err, 400));
           }
           if (result.length > 0) {
             logger.error(
-              "The phone is already in use. Please choose another one"
+              "The phone is already in use. Please choose another one",
+              {
+                action: "Phone query",
+                status: "failed",
+              }
             );
             return reject(
               new ErrorHandler(
@@ -68,7 +82,10 @@ export class UserModelOperations {
         `INSERT INTO users (email, first_name, surname, user_password, user_role, phone, dept_id) VALUES ("${this.user_data.email}", "${this.user_data.first_name}", "${this.user_data.surname}", "${this.user_data.user_password}", "${this.user_data.user_role}", "${this.user_data.phone}", "${this.user_data.dept_id}")`,
         async (err: any, result: any) => {
           if (err) {
-            logger.error(err);
+            logger.error(err, {
+              action: "User creation",
+              status: "failed",
+            });
             reject(new ErrorHandler(err, 400));
           } else {
             resolve(result);
@@ -156,11 +173,6 @@ export class UserModelOperationsNoData {
         async (err, results: any) => {
           if (err) {
             reject(new ErrorHandler(err, 500));
-          }
-          if (results.length <= 0) {
-            reject(
-              new ErrorHandler("There are no users yet in the database", 422)
-            );
           }
           resolve(results);
         }

@@ -19,7 +19,10 @@ export const validateRegistrationRequest =
     } catch (error) {
       if (error instanceof ZodError) {
         error.errors.map((e) => {
-          logger.error(e.message);
+          logger.error(e.message, {
+            action: "User registration data verification",
+            status: "failed",
+          });
         });
         res.status(422).json({
           success: false,
@@ -47,7 +50,10 @@ export const validateLoginRequest =
     } catch (error) {
       if (error instanceof ZodError) {
         error.errors.map((e) => {
-          logger.error(e.message);
+          logger.error(e.message, {
+            action: "User login data verification",
+            status: "failed",
+          });
         });
         res.status(422).json({
           success: false,
@@ -75,7 +81,10 @@ export const validateProfilePicRequest =
     } catch (error) {
       if (error instanceof ZodError) {
         error.errors.map((e) => {
-          logger.error(e.message);
+          logger.error(e.message, {
+            action: "User profile picture data verification",
+            status: "failed",
+          });
         });
         res.status(422).json({
           success: false,
@@ -103,7 +112,10 @@ export const validatePasswordRequest =
     } catch (error) {
       if (error instanceof ZodError) {
         error.errors.map((e) => {
-          logger.error(e.message);
+          logger.error(e.message, {
+            action: "User passwword data verification",
+            status: "failed",
+          });
         });
         res.status(422).json({
           success: false,
@@ -131,7 +143,10 @@ export const validateRoleRequest =
     } catch (error) {
       if (error instanceof ZodError) {
         error.errors.map((e) => {
-          logger.error(e.message);
+          logger.error(e.message, {
+            action: "User role data verification",
+            status: "failed",
+          });
         });
         res.status(422).json({
           success: false,

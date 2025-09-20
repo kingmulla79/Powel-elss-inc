@@ -24,7 +24,7 @@ import { backupDatabase } from "../utils/mysqldump";
 export const UserCreationController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const registrationResults = await UserCreationService(req.body);
+      await UserCreationService(req.body);
       res.status(200).json({
         success: true,
         message: `New user: ${req.body.first_name} ${req.body?.surname} - email ${req.body.email} account succcessfully created`,
@@ -309,9 +309,11 @@ export const UserAuthenticateUserController = CatchAsyncError(
 );
 
 cron.schedule("0 0 * * *", () => {
+  backupDatabase();
   logger.info(`Backing up system database on ${new Date()}`, {
     action: "System database backup",
     status: "success",
   });
-  backupDatabase();
+  console.log("_____________");
+  console.log(`running cron: backing up system database on ${new Date()}`);
 });

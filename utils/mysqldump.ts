@@ -20,6 +20,9 @@ export async function backupDatabase() {
       dumpToFile: BACKUP_PATH,
     });
   } catch (err) {
-    logger.error("System database backup failed:", err);
+    logger.error("System database backup failed:", err, {
+      action: "SQL database data dump",
+      status: "failed",
+    });
   }
 }

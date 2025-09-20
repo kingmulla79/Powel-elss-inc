@@ -15,7 +15,10 @@ export async function DeleteProfilePicture(
       );
     })
     .catch((error) => {
-      logger.error(`Error while deleting profile image from cloudinary`);
+      logger.error(`Error while deleting profile image from cloudinary`, {
+        action: "Cloudinary picture deletion",
+        status: "failed",
+      });
       throw new ErrorHandler(error.message, 500);
     });
 }

@@ -2,31 +2,22 @@ import { Response, Request, NextFunction } from "express";
 import { CatchAsyncError } from "../middleware/CatchAsyncErrors";
 import ErrorHandler from "../utils/Errorhandler";
 import cron from "node-cron";
-import { NotificationModelOperations } from "../models/notification.model";
-
-//get all notifications by the latest entry
-export const NotificationCreation = async (
-  title: string,
-  message: string,
-  not_status: string,
-  user_id: string | number
-) => {
-  try {
-    const notification = new NotificationModelOperations({
-      title,
-      message,
-      not_status,
-      user_id,
-    });
-    await notification.NotificationCreation();
-  } catch (error: any) {
-    return new ErrorHandler(error.message, 500);
-  }
-};
+import {
+  NotificationDeletionService,
+  NotificationFetchService,
+  NotificationUpdateService,
+} from "../services/notification.services";
+import { logger } from "../utils/logger";
 
 export const GetNotifications = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const notifications = await NotificationFetchService();
+      res.status(200).json({
+        success: true,
+        message: "All notifications fetched successfully",
+        notifications,
+      });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }
@@ -37,6 +28,12 @@ export const GetNotifications = CatchAsyncError(
 export const UpdateNotifications = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const { not_id } = req.params;
+      await NotificationUpdateService(not_id, req.user || {});
+      res.status(200).json({
+        success: true,
+        message: "Notification read",
+      });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }
@@ -44,9 +41,12 @@ export const UpdateNotifications = CatchAsyncError(
 );
 
 //delete read notifications
-cron.schedule("59 23 * * *", async () => {
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-
+cron.schedule("0 0 * * *", async () => {
+  await NotificationDeletionService();
+  logger.info("Deleting read notification", {
+    action: "Notification deletion",
+    status: "success",
+  });
   console.log("_____________");
   console.log("running cron: deleting read notification");
 });
