@@ -5,23 +5,7 @@ import { logger } from "../utils/logger";
 import { IJob } from "../utils/types";
 
 export class JobModelOperations {
-  constructor(
-    private job_data: {
-      job_id?: any;
-      job_title?: any;
-      job_type?: string;
-      job_status?: string;
-      job_description?: string;
-      job_location?: string;
-      priority?: string;
-      estimated_time?: string;
-      assigned_technician_id?: string;
-      scheduled_date?: string;
-      job_notes?: string;
-    }
-  ) {
-    this.job_data = job_data;
-  }
+  constructor(private job_data: Partial<IJob>) {}
 
   JobCreation = () => {
     return new Promise((resolve, reject) => {
@@ -54,6 +38,7 @@ export class JobModelOperations {
       );
     });
   };
+
   JobUpdate = () => {
     return new Promise((resolve, reject) => {
       pool.query(
@@ -86,7 +71,7 @@ export class JobModelOperationsNoData {
   AllJobs = () => {
     return new Promise((resolve, reject) => {
       pool.query(
-        "SELECT j.job_id, j.job_title, j.job_type, j.job_status, j.job_description, j.job_location, j.priority, j.estimated_time, j.scheduled_date, j.job_notes, j.assigned_technician_id, u.first_name as `technician_first_name`, u.surname as `technician_surname`, j.created_at, j.updated_at  FROM jobs j JOIN users u ON j.assigned_technician_id = u.user_id",
+        "SELECT j.job_id, j.job_list_id, j.job_title, j.job_type, j.job_status, j.job_description, j.job_location, j.priority, j.estimated_time, j.scheduled_date, j.job_notes, j.assigned_technician_id, u.first_name as `technician_first_name`, u.surname as `technician_surname`, j.created_at, j.updated_at  FROM jobs j JOIN users u ON j.assigned_technician_id = u.user_id",
         async (err, results: any) => {
           if (err) {
             reject(new ErrorHandler(err, 500));

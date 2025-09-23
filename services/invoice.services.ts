@@ -1,4 +1,4 @@
-import { IJob } from "../utils/types";
+import { IInvoice, IJob } from "../utils/types";
 import ErrorHandler from "../utils/Errorhandler";
 import { logger } from "../utils/logger";
 import {
@@ -6,84 +6,56 @@ import {
   JobModelOperationsNoData,
 } from "../models/jobs.models";
 import { format } from "date-fns";
+import {
+  InvoiceModelOperations,
+  InvoiceModelOperationsNoData,
+} from "../models/invoice.models";
 
-export const JobCreationService = async (body: IJob) => {
+export const InvoiceGenerationService = async (body: IInvoice) => {
   try {
-    const jobCreation = new JobModelOperations(body);
+    const invoiceGeneration = new InvoiceModelOperations(body);
 
-    await jobCreation.JobCreation();
+    await invoiceGeneration.InvoiceGeneration();
   } catch (error: any) {
-    logger.error(`Error while creating new job: ${error.message}`, {
-      action: "Job creation",
+    logger.error(`Error while generating new invoice: ${error.message}`, {
+      action: "Inventory generation",
       status: "failed",
     });
     throw new ErrorHandler(error.message, 500);
   }
 };
 
-export const JobFetchService = async (): Promise<{ jobData: Array<any> }> => {
+export const InvoiceEditService = async (body: IInvoice) => {
   try {
-    let jobData: any;
-    const jobFetch = new JobModelOperationsNoData();
-
-    await jobFetch
-      .AllJobs()
-      .then((results: any) => {
-        results.forEach((result: any) => {
-          const datetime = new Date(result.scheduled_date);
-          const datePart = format(datetime, "yyyy-MM-dd"); // "2025-09-20"
-          const timePart = format(datetime, "HH:mm:ss");
-          result.scheduled_date = datePart;
-          result.scheduled_time = timePart;
-        });
-        jobData = results;
-      })
-      .catch((error) => {
-        logger.error(`Error while fetching job information: ${error.message}`, {
-          action: "Job information fetch",
-          status: "failed",
-        });
-        throw new ErrorHandler(error.message, 500);
-      });
-    return jobData;
   } catch (error: any) {
-    logger.error(`Error while fetching job information: ${error.message}`, {
-      action: "Job information fetch",
+    logger.error(`Error while editing invoice information: ${error.message}`, {
+      action: "Invoice information editing",
       status: "failed",
     });
     throw new ErrorHandler(error.message, 500);
   }
 };
 
-export const JobRelatedJobsFetchService = async (
-  job_list_id: string
-): Promise<{
+export const InvoiceFetchService = async (): Promise<{
   jobData: Array<any>;
 }> => {
   try {
-    let jobData: any;
-    const jobFetch = new JobModelOperationsNoData();
+    let invoiceData: any;
+    const invoiceFetch = new InvoiceModelOperationsNoData();
 
-    await jobFetch
-      .JobFilter("job_list_id", job_list_id)
+    await invoiceFetch
+      .AllInvoices()
       .then((results: any) => {
-        results.forEach((result: any) => {
-          const datetime = new Date(result.scheduled_date);
-          const datePart = format(datetime, "yyyy-MM-dd"); // "2025-09-20"
-          const timePart = format(datetime, "HH:mm:ss");
-          result.scheduled_date = datePart;
-          result.scheduled_time = timePart;
-        });
-        jobData = results;
+        invoiceData = results;
       })
       .catch((error) => {
-        logger.error(`Error while fetching job information: ${error.message}`, {
-          action: "Job information fetch",
+        logger.error(`Error while fetching invoices: ${error.message}`, {
+          action: "Invoice data fetch",
           status: "failed",
         });
         throw new ErrorHandler(error.message, 500);
       });
-    return jobData;
+    return invoiceData;
   } catch (error: any) {
     logger.error(`Error while fetching job information: ${error.message}`, {
       action: "Job information fetch",

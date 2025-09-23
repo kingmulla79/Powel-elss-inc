@@ -113,7 +113,7 @@ export const validatePasswordRequest =
       if (error instanceof ZodError) {
         error.errors.map((e) => {
           logger.error(e.message, {
-            action: "User passwword data verification",
+            action: "User password data verification",
             status: "failed",
           });
         });

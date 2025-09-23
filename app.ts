@@ -7,6 +7,7 @@ import UserRouter from "./routes/user.routes";
 import JobRouter from "./routes/jobs.routes";
 import { contextMiddleware } from "./utils/contextMiddleware";
 import NotificationsRouter from "./routes/notifications.routes";
+import InvoiceRouter from "./routes/invoice.routes";
 
 export const app = express();
 
@@ -24,7 +25,8 @@ app.use(
 
 app.use("/api/auth", UserRouter);
 app.use("/api/jobs", JobRouter);
-app.use("/api/not", NotificationsRouter);
+app.use("/api/notifications", NotificationsRouter);
+app.use("/api/invoice", InvoiceRouter);
 
 app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
   const err = new Error(`Route ${req.originalUrl} not found`) as any;

@@ -59,8 +59,7 @@ export class NotificationModelOperations {
   DeleteNotification = () => {
     return new Promise((resolve, reject) => {
       pool.query(
-        "DELETE FROM notifications read WHERE created_at < NOW() - INTERVAL 1 MONTH",
-        [this.not_data.not_id],
+        `DELETE FROM notifications WHERE created_at < NOW() - INTERVAL 1 MONTH AND not_status = "read"`,
         async (err, results: any) => {
           if (err) {
             reject(new ErrorHandler(err, 500));

@@ -12,15 +12,25 @@ export interface IUser {
   dept_id: string;
 }
 export interface IJob {
-  job_id?: string;
-  job_title?: string;
-  job_type?: string;
-  job_status?: string;
-  job_description?: string;
-  job_location?: string;
-  priority?: string;
-  estimated_time?: string;
-  assigned_technician_id?: string;
-  scheduled_date?: string;
-  job_notes?: string;
+  job_id: string;
+  job_list_id: string | number;
+  job_title: string;
+  job_type: string;
+  job_status: string;
+  job_description: string;
+  job_location: string;
+  priority: string;
+  estimated_time: string;
+  assigned_technician_id: string;
+  scheduled_date: string;
+  job_notes: string;
+}
+
+export interface IInvoice {
+  invoice_id: string;
+  invoice_code: string;
+  job_list_id: string;
+  amount: string;
+  invoice_status: string;
+  due_date: string;
 }
