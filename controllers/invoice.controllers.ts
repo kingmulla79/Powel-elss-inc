@@ -11,6 +11,7 @@ import {
   JobRelatedJobsFetchService,
 } from "../services/jobs.services";
 import {
+  InvoiceDeleteService,
   InvoiceEditService,
   InvoiceFetchService,
   InvoiceGenerationService,
@@ -54,14 +55,13 @@ export const InvoiceFetchController = CatchAsyncError(
 export const InvoiceEditController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { invoice_id } = req.params;
       await InvoiceEditService(req.body);
       res.status(200).json({
         success: true,
         message: `Invoice successfully edited`,
       });
       logger.info(
-        `Invoice:${invoice_id} successfully edited by: ${req.user?.user_id}`
+        `Invoice:${req.body.invoice_id} successfully edited by: ${req.user?.user_id}`
       );
     } catch (error: any) {
       if (error) {
@@ -71,17 +71,18 @@ export const InvoiceEditController = CatchAsyncError(
   }
 );
 
-export const JobRelatedJobsFetchController = CatchAsyncError(
+export const InvoiceDeleteController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { job_list_id } = req.params;
-      const jobData = await JobRelatedJobsFetchService(job_list_id);
+      const { invoice_id } = req.params;
+      await InvoiceDeleteService(invoice_id);
       res.status(200).json({
         success: true,
-        jobs: jobData,
-        message: `All jobs data fetched by: ${req.user?.user_id}`,
+        message: `Invoice: ${invoice_id} deleted successfully`,
       });
-      logger.info(`All jobs data fetched by: ${req.user?.user_id}`);
+      logger.info(
+        `Invoice: ${invoice_id} deleted successfully by: ${req.user?.user_id}`
+      );
     } catch (error: any) {
       if (error) {
         return next(new ErrorHandler(error.message, 500));

@@ -208,7 +208,7 @@ export const UserUpdateUserInfoService = async (
     const userObject = new UserModelOperationsNoData();
 
     await userObject.UserById(parseInt(user_id)).then(async (result: any) => {
-      user = result[0];
+      user = result;
 
       if (
         user.first_name === first_name &&

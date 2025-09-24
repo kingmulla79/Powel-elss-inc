@@ -2,6 +2,7 @@ import express from "express";
 import { authorizedRoles, isAuthenticated } from "../middleware/Auth";
 import {
   InvoiceCreationController,
+  InvoiceDeleteController,
   InvoiceEditController,
   InvoiceFetchController,
 } from "../controllers/invoice.controllers";
@@ -29,6 +30,13 @@ InvoiceRouter.put(
   isAuthenticated,
   authorizedRoles("system_admin", "admin"),
   InvoiceEditController
+);
+
+InvoiceRouter.delete(
+  "/delete-invoice/:invoice_id",
+  isAuthenticated,
+  authorizedRoles("system_admin", "admin"),
+  InvoiceDeleteController
 );
 
 export default InvoiceRouter;

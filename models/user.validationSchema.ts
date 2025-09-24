@@ -32,6 +32,12 @@ export const UserLoginSchema = z.object({
   user_password: z.string(),
 });
 
+export const UserProfileSchema = z.object({
+  first_name: z.string(),
+  surname: z.string(),
+  phone: z.string(),
+});
+
 export const UserProfilePicSchema = z.object({
   avatar: z.string(),
 });

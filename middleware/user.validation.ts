@@ -5,6 +5,7 @@ import {
   UserLoginSchema,
   UserPasswordSchema,
   UserProfilePicSchema,
+  UserProfileSchema,
   UserRegistrationSchema,
   UserRoleSchema,
 } from "../models/user.validationSchema";
@@ -52,6 +53,37 @@ export const validateLoginRequest =
         error.errors.map((e) => {
           logger.error(e.message, {
             action: "User login data verification",
+            status: "failed",
+          });
+        });
+        res.status(422).json({
+          success: false,
+          errors: error.errors.map((e) => ({
+            field: e.path.join("."),
+            message: e.message,
+          })),
+        });
+        return;
+      }
+
+      res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
+      });
+    }
+  };
+
+export const validateProfileInformationRequest =
+  () =>
+  (req: Request, res: Response, next: NextFunction): void => {
+    try {
+      UserProfileSchema.parse(req.body);
+      next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        error.errors.map((e) => {
+          logger.error(e.message, {
+            action: "User profile information data verification",
             status: "failed",
           });
         });

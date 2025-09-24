@@ -5,92 +5,192 @@ import { logger } from "../utils/logger";
 import { IInvoice, IJob } from "../utils/types";
 
 export class InvoiceModelOperations {
-  constructor(private inventory_data: Partial<IInvoice>) {}
+  constructor(private invoice_data: Partial<IInvoice>) {}
 
-  InvoiceGeneration = () => {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        `CALL GenerateInvoice(${this.inventory_data.job_list_id}, "${this.inventory_data.amount}", "${this.inventory_data.invoice_status}", ${this.inventory_data.due_date})`,
-        async (err: any, result: any) => {
-          if (err) {
-            logger.error(err, {
-              action: "Invoice generation",
-              status: "failed",
-            });
-            reject(new ErrorHandler(err, 400));
-          } else {
-            resolve(result);
-          }
-        }
+  async InvoiceCheck(): Promise<any> {
+    try {
+      const [rows] = await pool.query(
+        "SELECT * FROM invoices WHERE job_list_id = ?",
+        [this.invoice_data.job_list_id]
       );
-    });
-  };
+
+      const result = rows as any[];
+
+      if (result.length > 0) {
+        logger.error("There is an invoice record for the job services", {
+          action: "Invoice job-list check",
+          status: "failed",
+        });
+        throw new ErrorHandler(
+          "There is an invoice record for the job services",
+          409
+        );
+      }
+
+      return result;
+    } catch (err: any) {
+      logger.error(err, {
+        action: "Invoice job-list check",
+        status: "failed",
+      });
+      throw new ErrorHandler(err, 400);
+    }
+  }
+
+  async InvoiceGeneration(): Promise<any> {
+    try {
+      const [result] = await pool.query(`CALL GenerateInvoice(?, ?, ?, ?)`, [
+        this.invoice_data.job_list_id,
+        this.invoice_data.amount,
+        this.invoice_data.invoice_status,
+        this.invoice_data.due_date,
+      ]);
+
+      return result;
+    } catch (err: any) {
+      logger.error(err, {
+        action: "Invoice generation",
+        status: "failed",
+      });
+      throw new ErrorHandler(err, 400);
+    }
+  }
+
+  async InvoiceEditing(): Promise<any> {
+    try {
+      const [result] = await pool.query(
+        `UPDATE invoices SET invoice_status = ?, amount = ?, due_date = ? WHERE job_list_id = ?`,
+        [
+          this.invoice_data.invoice_status,
+          this.invoice_data.amount,
+          this.invoice_data.due_date,
+          this.invoice_data.job_list_id,
+        ]
+      );
+
+      return result;
+    } catch (err: any) {
+      logger.error(err, {
+        action: "Invoice information update",
+        status: "failed",
+      });
+      throw new ErrorHandler(err, 400);
+    }
+  }
 }
 
 export class InvoiceModelOperationsNoData {
-  AllInvoices = () => {
-    return new Promise((resolve, reject) => {
-      pool.query(
+  async AllInvoices(): Promise<any> {
+    try {
+      const [results] = await pool.query(
         `SELECT DISTINCT
-              i.invoice_code,
-              i.job_list_id,
-              COUNT(i.job_list_id) AS "total_services",
-              i.amount,
-              i.invoice_status,
-              i.due_date,
-              j.cust_id,
-              c.company_name,
-              c.contact_first_name,
-              c.contact_surname,
-              c.email,
-              c.phone
-          FROM
-              invoices i
-                  JOIN
-              jobs j ON i.job_list_id = j.job_list_id
-                  JOIN
-              customers c ON j.cust_id = c.cust_id
-          GROUP BY i.invoice_code , i.job_list_id , i.amount , i.invoice_status , i.due_date , j.job_list_id , j.cust_id , c.company_name , c.contact_first_name , c.contact_surname;`,
-        async (err, results: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-
-          resolve(results);
-        }
+          i.invoice_id,
+          i.invoice_code,
+          i.job_list_id,
+          COUNT(i.job_list_id) AS total_services,
+          i.amount,
+          i.invoice_status,
+          i.due_date,
+          j.cust_id,
+          c.company_name,
+          c.contact_first_name,
+          c.contact_surname,
+          c.email,
+          c.phone
+       FROM invoices i
+       JOIN jobs j ON i.job_list_id = j.job_list_id
+       JOIN customers c ON j.cust_id = c.cust_id
+       GROUP BY i.invoice_id, i.invoice_code, i.job_list_id, 
+                i.amount, i.invoice_status, i.due_date, 
+                j.job_list_id, j.cust_id, 
+                c.company_name, c.contact_first_name, c.contact_surname, c.email, c.phone`
       );
-    });
-  };
 
-  JobFilter = (
+      return results;
+    } catch (err: any) {
+      logger.error(err, {
+        action: "All invoices fetch",
+        status: "failed",
+      });
+      throw new ErrorHandler(err, 500);
+    }
+  }
+
+  async InvoiceFilter(
     filter_column: string,
     filter_data: string
-  ): Promise<Array<IJob>> => {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        `SELECT j.job_id, j.job_title, j.job_type, j.job_status, j.job_description, j.job_location, j.priority, j.estimated_time, j.scheduled_date, j.job_notes, j.assigned_technician_id, u.first_name as "technician_first_name", u.surname as "technician_surname", j.created_at, j.updated_at  FROM jobs j JOIN users u ON j.assigned_technician_id = u.user_id WHERE ${filter_column} = ${filter_data}`,
-        async (err, results: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          resolve(results);
-        }
-      );
-    });
-  };
+  ): Promise<Array<any>> {
+    try {
+      // validate allowed filter columns to prevent SQL injection
+      const allowedColumns = [
+        "i.invoice_id",
+        "i.invoice_code",
+        "i.job_list_id",
+        "i.amount",
+        "i.invoice_status",
+        "i.due_date",
+        "j.cust_id",
+        "c.company_name",
+        "c.contact_first_name",
+        "c.contact_surname",
+        "c.email",
+        "c.phone",
+      ];
 
-  DeleteJob = (job_id: string) => {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        `DELETE FROM jobs WHERE job_id = ?`,
-        [job_id],
-        async (err, results: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          resolve(results);
-        }
+      if (!allowedColumns.includes(filter_column)) {
+        throw new ErrorHandler("Invalid filter column", 400);
+      }
+
+      const [results] = await pool.query(
+        `SELECT DISTINCT
+          i.invoice_id,
+          i.invoice_code,
+          i.job_list_id,
+          COUNT(i.job_list_id) AS total_services,
+          i.amount,
+          i.invoice_status,
+          i.due_date,
+          j.cust_id,
+          c.company_name,
+          c.contact_first_name,
+          c.contact_surname,
+          c.email,
+          c.phone
+       FROM invoices i
+       JOIN jobs j ON i.job_list_id = j.job_list_id
+       JOIN customers c ON j.cust_id = c.cust_id
+       WHERE ${filter_column} = ?
+       GROUP BY i.invoice_id, i.invoice_code, i.job_list_id,
+                i.amount, i.invoice_status, i.due_date,
+                j.job_list_id, j.cust_id,
+                c.company_name, c.contact_first_name, c.contact_surname, c.email, c.phone`,
+        [filter_data]
       );
-    });
-  };
+
+      return results as Array<any>;
+    } catch (err: any) {
+      logger.error(err, {
+        action: "Invoice filter query",
+        status: "failed",
+      });
+      throw new ErrorHandler(err, 500);
+    }
+  }
+
+  async DeleteInvoice(invoice_id: string) {
+    try {
+      const [results] = await pool.query(
+        `DELETE FROM invoices WHERE invoice_id = ?`,
+        [invoice_id]
+      );
+
+      return results;
+    } catch (err: any) {
+      logger.error(err, {
+        action: "Delete invoice",
+        status: "failed",
+      });
+      throw new ErrorHandler(err, 500);
+    }
+  }
 }

@@ -15,6 +15,7 @@ export const InvoiceGenerationService = async (body: IInvoice) => {
   try {
     const invoiceGeneration = new InvoiceModelOperations(body);
 
+    await invoiceGeneration.InvoiceCheck();
     await invoiceGeneration.InvoiceGeneration();
   } catch (error: any) {
     logger.error(`Error while generating new invoice: ${error.message}`, {
@@ -27,6 +28,47 @@ export const InvoiceGenerationService = async (body: IInvoice) => {
 
 export const InvoiceEditService = async (body: IInvoice) => {
   try {
+    const { invoice_status, job_list_id, amount, due_date } = body;
+
+    const invoiceData = new InvoiceModelOperationsNoData();
+
+    const invoiceResults = await invoiceData.InvoiceFilter(
+      `i.job_list_id`,
+      `${job_list_id}`
+    );
+
+    if (invoiceResults.length < 1) {
+      logger.error(`No invoice record with the specified job-list id`, {
+        action: "Invoice information editing",
+        status: "failed",
+      });
+      throw new ErrorHandler(
+        "No invoice record with the specified job-list id",
+        404
+      );
+    }
+
+    if (
+      invoiceResults[0].invoice_status === invoice_status &&
+      invoiceResults[0].amount === amount &&
+      invoiceResults[0].due_date === due_date
+    ) {
+      logger.error(
+        "Updated invoice information cannot be the same as the available one",
+        {
+          action: "Invoice information editing",
+          status: "failed",
+        }
+      );
+      throw new ErrorHandler(
+        `Updated invoice information cannot be the same as the available one`,
+        409
+      );
+    }
+
+    const invoiceEdit = new InvoiceModelOperations(body);
+
+    await invoiceEdit.InvoiceEditing();
   } catch (error: any) {
     logger.error(`Error while editing invoice information: ${error.message}`, {
       action: "Invoice information editing",
@@ -65,114 +107,19 @@ export const InvoiceFetchService = async (): Promise<{
   }
 };
 
-export const JobByTechnicianService = async (
-  assigned_technician_id: string
-): Promise<{ technicianJobData: Array<any> }> => {
-  try {
-    let technicianJobData: any;
-    const technicianJobFetch = new JobModelOperations({
-      assigned_technician_id,
-    });
-
-    await technicianJobFetch
-      .AllTechnicianJobs()
-      .then((results: any) => {
-        technicianJobData = results;
-      })
-      .catch((error) => {
-        logger.error(
-          `Error while fetching jobs by tecnician - ${assigned_technician_id} : ${error.message}`,
-          {
-            action: "Technician job information fetch",
-            status: "failed",
-          }
-        );
-        throw new ErrorHandler(error.message, 500);
-      });
-    return technicianJobData;
-  } catch (error: any) {
-    logger.error(
-      `Error while fetching jobs by tecnician - ${assigned_technician_id} : ${error.message}`,
-      {
-        action: "Technician job information fetch",
-        status: "failed",
-      }
-    );
-    throw new ErrorHandler(error.message, 500);
-  }
-};
-
-export const JobEditService = async (body: IJob, user_role: string) => {
-  try {
-    const jobEntrySearch = new JobModelOperationsNoData();
-
-    const jobData = await jobEntrySearch.JobFilter(
-      "job_id",
-      body.job_id ? body.job_id : ""
-    );
-    const {
-      job_title,
-      job_type,
-      job_status,
-      job_description,
-      job_location,
-      priority,
-      estimated_time,
-      assigned_technician_id,
-      scheduled_date,
-      job_notes,
-    } = body;
-
-    if (
-      job_title === jobData[0].job_title &&
-      job_type === jobData[0].job_type &&
-      job_status === jobData[0].job_status &&
-      job_description === jobData[0].job_description &&
-      job_location === jobData[0].job_location &&
-      priority === jobData[0].priority &&
-      estimated_time === jobData[0].estimated_time &&
-      assigned_technician_id?.toString() ===
-        jobData[0].assigned_technician_id?.toString() &&
-      scheduled_date === jobData[0].scheduled_date &&
-      job_notes === jobData[0].job_notes
-    ) {
-      throw new ErrorHandler(
-        `Updated job information cannot be the same as the available one`,
-        409
-      );
-    }
-    if (
-      (job_status === "assigned" && user_role !== "system_admin") ||
-      "admin" ||
-      "operations_manager"
-    ) {
-      throw new ErrorHandler(
-        `Unauthorized operations for user role: ${user_role}`,
-        401
-      );
-    }
-    const jobUpdate = new JobModelOperations(body);
-
-    await jobUpdate.JobUpdate();
-  } catch (error: any) {
-    logger.error(`Error while updating job information: ${error.message}`, {
-      action: "Job information update",
-      status: "failed",
-    });
-    throw new ErrorHandler(error.message, 500);
-  }
-};
-
-export const JobDeleteService = async (job_id: string) => {
+export const InvoiceDeleteService = async (invoice_id: string) => {
   try {
     const jobDelete = new JobModelOperationsNoData();
 
-    await jobDelete.DeleteJob(job_id);
+    await jobDelete.DeleteJob(invoice_id);
   } catch (error: any) {
-    logger.error(`Error while deleting job - ${job_id}: ${error.message}`, {
-      action: "Job deletion",
-      status: "failed",
-    });
+    logger.error(
+      `Error while deleting invoice - ${invoice_id}: ${error.message}`,
+      {
+        action: "Invoice deletion",
+        status: "failed",
+      }
+    );
     throw new ErrorHandler(error.message, 500);
   }
 };

@@ -34,7 +34,7 @@ JobRouter.get(
 );
 
 JobRouter.get(
-  "/same-jobs/:job_list_id",
+  "/related-jobs/:job_list_id",
   isAuthenticated,
   authorizedRoles("system_admin", "technician"),
   JobRelatedJobsFetchController

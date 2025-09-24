@@ -16,10 +16,10 @@ import {
 export const JobCreationController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await JobCreationService(req.body);
+      await JobCreationService(req.body, req.user?.user_id);
       res.status(200).json({
         success: true,
-        message: `New job created by user: ${req.user?.user_id}`,
+        message: `New job created`,
       });
       logger.info(`New job created by user: ${req.user?.user_id}`);
     } catch (error: any) {
@@ -37,7 +37,7 @@ export const JobFetchController = CatchAsyncError(
       res.status(200).json({
         success: true,
         jobs: jobData,
-        message: `All jobs data fetched by: ${req.user?.user_id}`,
+        message: `All jobs data fetched successfully`,
       });
       logger.info(`All jobs data fetched by: ${req.user?.user_id}`);
     } catch (error: any) {
@@ -56,7 +56,7 @@ export const JobRelatedJobsFetchController = CatchAsyncError(
       res.status(200).json({
         success: true,
         jobs: jobData,
-        message: `All jobs data fetched by: ${req.user?.user_id}`,
+        message: `All jobs data fetched successfully`,
       });
       logger.info(`All jobs data fetched by: ${req.user?.user_id}`);
     } catch (error: any) {
@@ -75,10 +75,10 @@ export const JobByTechnicianController = CatchAsyncError(
       res.status(200).json({
         success: true,
         jobs: technicianJobData,
-        message: `All jobs for the technician ${technicianId} data fetched by: ${req.user?.user_id}`,
+        message: `All job data for the technician ${technicianId} fetched`,
       });
       logger.info(
-        `All jobs for the technician ${technicianId} data fetched by: ${req.user?.user_id}`
+        `All job data for the technician ${technicianId}fetched by: ${req.user?.user_id}`
       );
     } catch (error: any) {
       if (error) {
@@ -94,7 +94,7 @@ export const JobEditController = CatchAsyncError(
       await JobEditService(req.body, req.user?.user_role || "");
       res.status(200).json({
         success: true,
-        message: `Job ${req.body.job_id} successfully edited by : ${req.user?.user_id}`,
+        message: `Job ${req.body.job_id} successfully edited`,
       });
       logger.info(
         `Job ${req.body.job_id} successfully edited by : ${req.user?.user_id}`
@@ -114,7 +114,7 @@ export const JobDeleteController = CatchAsyncError(
       await JobDeleteService(job_id);
       res.status(200).json({
         success: true,
-        message: `Job ${job_id} successfully deleted by : ${req.user?.user_id}`,
+        message: `Job ${job_id} successfully deleted`,
       });
       logger.info(
         `Job ${job_id} successfully deleted by : ${req.user?.user_id}`

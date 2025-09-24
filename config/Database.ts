@@ -1,7 +1,7 @@
 require("dotenv").config({ quiet: true });
-import mysql, { PoolOptions } from "mysql2";
-import { Pool } from "mysql2/typings/mysql/lib/Pool";
+import { createPool, Pool, PoolOptions } from "mysql2/promise";
 import { logger } from "../utils/logger";
+
 export let pool: Pool;
 
 export const connectUserDatabase = async () => {
@@ -11,10 +11,12 @@ export const connectUserDatabase = async () => {
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
+      waitForConnections: true,
       connectionLimit: 10,
+      queueLimit: 0,
     };
-    pool = mysql.createPool(access);
 
+    pool = createPool(access);
     return pool;
   } catch (error: any) {
     logger.error(error.message, {

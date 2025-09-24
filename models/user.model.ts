@@ -7,73 +7,60 @@ import { IUser } from "../utils/types";
 export class UserModelOperations {
   constructor(private user_data: Partial<IUser>) {}
 
-  EmailQuery = () => {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        "SELECT * FROM users WHERE email = ?",
-        [this.user_data.email],
-        (err: any, result: Array<any>) => {
-          if (err) {
-            logger.error(err, {
-              action: "Email query",
-              status: "failed",
-            });
-            reject(new ErrorHandler(err, 400));
-          }
-          if (result.length > 0) {
-            logger.error(
-              "The email is already in use. Please choose another one",
-              {
-                action: "Email query",
-                status: "failed",
-              }
-            );
-            reject(
-              new ErrorHandler(
-                "The email is already in use. Please choose another one",
-                409
-              )
-            );
-          }
+  EmailQuery = async () => {
+    try {
+      const [rows] = (await pool.query("SELECT * FROM users WHERE email = ?", [
+        this.user_data.email,
+      ])) as any[];
 
-          resolve(result);
-        }
-      );
-    });
+      if (rows.length > 0) {
+        logger.error("The email is already in use. Please choose another one", {
+          action: "Email query",
+          status: "failed",
+        });
+
+        throw new ErrorHandler(
+          "The email is already in use. Please choose another one",
+          409
+        );
+      }
+
+      return rows;
+    } catch (err: any) {
+      logger.error(err, {
+        action: "Email query",
+        status: "failed",
+      });
+      throw new ErrorHandler(err, 400);
+    }
   };
 
-  PhoneQuery = () => {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        "SELECT * FROM users WHERE phone = ?",
-        [this.user_data.phone],
-        (err: any, result: Array<any>) => {
-          if (err) {
-            logger.error(err, {
-              action: "Phone query",
-              status: "failed",
-            });
-            reject(new ErrorHandler(err, 400));
-          }
-          if (result.length > 0) {
-            logger.error(
-              "The phone is already in use. Please choose another one",
-              {
-                action: "Phone query",
-                status: "failed",
-              }
-            );
-            return reject(
-              new ErrorHandler(
-                "The phone is already in use. Please choose another one",
-                409
-              )
-            );
-          }
-          resolve(result);
-        }
-      );
-    });
+  PhoneQuery = async () => {
+    try {
+      const [rows] = (await pool.query("SELECT * FROM users WHERE phone = ?", [
+        this.user_data.phone,
+      ])) as any[];
+
+      if (rows.length > 0) {
+        logger.error("The phone is already in use. Please choose another one", {
+          action: "Phone query",
+          status: "failed",
+        });
+
+        throw new ErrorHandler(
+          "The phone is already in use. Please choose another one",
+          409
+        );
+      }
+
+      return rows;
+    } catch (err: any) {
+      logger.error(err, {
+        action: "Phone query",
+        status: "failed",
+      });
+      throw new ErrorHandler(err, 400);
+    }
   };
 
   UserCreation = () => {
@@ -95,150 +82,166 @@ export class UserModelOperations {
     });
   };
   async UserLogin(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        `SELECT * FROM users WHERE email = ?`,
-        [this.user_data.email],
-        async (err, result: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          if (result.length <= 0) {
-            reject(new ErrorHandler("Invalid email or password", 401));
-          }
-          resolve(result[0]);
-        }
-      );
-    });
+    try {
+      const [rows] = (await pool.query(`SELECT * FROM users WHERE email = ?`, [
+        this.user_data.email,
+      ])) as any[];
+
+      if (rows.length <= 0) {
+        throw new ErrorHandler("Invalid email or password", 401);
+      }
+
+      return rows[0];
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
   }
-  UserUpdateInfo = () => {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        `UPDATE users SET first_name = ?, surname = ?, phone = ? WHERE user_id = ?`,
+
+  async UserUpdateInfo(): Promise<any> {
+    try {
+      const [result] = await pool.query(
+        `UPDATE users  SET first_name = ?, surname = ?, phone = ? WHERE user_id = ?`,
         [
           this.user_data.first_name,
           this.user_data.surname,
           this.user_data.phone,
           this.user_data.user_id,
-        ],
-        async (err, result: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          resolve(result);
-        }
+        ]
       );
-    });
-  };
 
-  UserProfilePic = () => {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        `UPDATE users SET avatar_public_id = ?, avatar_url = ? WHERE user_id = ?`,
+      return result;
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
+
+  async UserProfilePic(): Promise<any> {
+    try {
+      const [result] = await pool.query(
+        `UPDATE users 
+       SET avatar_public_id = ?, avatar_url = ? 
+       WHERE user_id = ?`,
         [
           this.user_data.avatar_public_id,
           this.user_data.avatar_url,
           this.user_data.user_id,
-        ],
-        async (err, result: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          resolve(result);
-        }
+        ]
       );
-    });
-  };
-  UserUpdatePassword = () => {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        `UPDATE users SET user_password = ? WHERE user_id = ?`,
-        [this.user_data.user_password, this.user_data.user_id],
-        async (err, result: any) => {
-          if (err) {
-            return reject(new ErrorHandler(err, 500));
-          }
-          resolve(result);
-        }
+
+      return result; // contains info like affectedRows
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
+
+  async UserUpdatePassword(): Promise<any> {
+    try {
+      const [result] = await pool.query(
+        `UPDATE users 
+       SET user_password = ? 
+       WHERE user_id = ?`,
+        [this.user_data.user_password, this.user_data.user_id]
       );
-    });
-  };
+
+      return result; // contains affectedRows, changedRows, etc.
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
 }
 
 export class UserModelOperationsNoData {
-  AllUsers = () => {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        `SELECT u.user_id, u.first_name, u.surname, u.email, u.user_password, u.phone, u.avatar_public_id, u.avatar_url, u.user_role, d.dept_id, d.dept_name, u.created_at, u.updated_at  FROM users u JOIN department d ON u.dept_id = d.dept_id;`,
-        async (err, results: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          resolve(results);
-        }
+  async AllUsers(): Promise<any[]> {
+    try {
+      const [results] = await pool.query(
+        `SELECT 
+         u.user_id, 
+         u.first_name, 
+         u.surname, 
+         u.email, 
+         u.user_password, 
+         u.phone, 
+         u.avatar_public_id, 
+         u.avatar_url, 
+         u.user_role, 
+         d.dept_id, 
+         d.dept_name, 
+         u.created_at, 
+         u.updated_at  
+       FROM users u 
+       JOIN department d ON u.dept_id = d.dept_id`
       );
-    });
-  };
-  UserByEmail = (email: string) => {
-    return new Promise((resolve, reject) => {
-      pool.query(
+
+      return results as any[];
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
+
+  async UserByEmail(email: string): Promise<any> {
+    try {
+      const [results] = await pool.query(
         `SELECT * FROM users WHERE email = ?`,
-        [email],
-        async (err, results: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          if (results.length <= 0) {
-            reject(new ErrorHandler("No users by the provided email", 401));
-          }
-          resolve(results);
-        }
+        [email]
       );
-    });
-  };
-  UserById = (user_id: number) => {
-    return new Promise((resolve, reject) => {
-      pool.query(
+
+      const users = results as any[];
+
+      if (users.length <= 0) {
+        throw new ErrorHandler("No users by the provided email", 401);
+      }
+
+      return users[0];
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
+
+  async UserById(user_id: number): Promise<any> {
+    try {
+      const [results] = await pool.query(
         `SELECT * FROM users WHERE user_id = ?`,
-        [user_id],
-        async (err, results: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          if (results.length <= 0) {
-            reject(new ErrorHandler("No users by the provided id", 401));
-          }
-          resolve(results);
-        }
+        [user_id]
       );
-    });
-  };
-  UpdateRole = (role: string, id: number) => {
-    return new Promise((resolve, reject) => {
-      pool.query(
+
+      const users = results as any[];
+
+      if (users.length <= 0) {
+        throw new ErrorHandler("No users by the provided id", 401);
+      }
+
+      return users[0]; // return the single matching user
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
+
+  async UpdateRole(role: string, id: number): Promise<any> {
+    try {
+      const [result] = await pool.query(
         `UPDATE users SET user_role = ? WHERE user_id = ?`,
-        [role, id],
-        async (err, results: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          resolve(results);
-        }
+        [role, id]
       );
-    });
-  };
-  DeleteUser = (user_id: number) => {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        `DELETE FROM users WHERE user_id = ?`,
-        [user_id],
-        async (err, results: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          resolve(results);
-        }
-      );
-    });
-  };
+
+      return result; // MySQL update result (affectedRows, etc.)
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
+
+  async DeleteUser(user_id: number): Promise<any> {
+    try {
+      const [result] = await pool.query(`DELETE FROM users WHERE user_id = ?`, [
+        user_id,
+      ]);
+
+      if ((result as any).affectedRows === 0) {
+        throw new ErrorHandler("No user found with the provided id", 404);
+      }
+
+      return result; // contains affectedRows, warningStatus, etc.
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
 }

@@ -3,6 +3,7 @@ import { authorizedRoles, isAuthenticated } from "../middleware/Auth";
 import {
   validateLoginRequest,
   validatePasswordRequest,
+  validateProfileInformationRequest,
   validateProfilePicRequest,
   validateRegistrationRequest,
   validateRoleRequest,
@@ -47,6 +48,7 @@ UserRouter.get(
 
 UserRouter.put(
   "/update-information",
+  validateProfileInformationRequest(),
   isAuthenticated,
   UserUpdateUserInfoController
 );
