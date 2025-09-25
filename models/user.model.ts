@@ -27,7 +27,7 @@ export class UserModelOperations {
 
       return rows;
     } catch (err: any) {
-      logger.error(err, {
+      logger.error(err.sqlMessage, {
         action: "Email query",
         status: "failed",
       });
@@ -55,7 +55,7 @@ export class UserModelOperations {
 
       return rows;
     } catch (err: any) {
-      logger.error(err, {
+      logger.error(err.sqlMessage, {
         action: "Phone query",
         status: "failed",
       });
@@ -69,7 +69,7 @@ export class UserModelOperations {
         `INSERT INTO users (email, first_name, surname, user_password, user_role, phone, dept_id) VALUES ("${this.user_data.email}", "${this.user_data.first_name}", "${this.user_data.surname}", "${this.user_data.user_password}", "${this.user_data.user_role}", "${this.user_data.phone}", "${this.user_data.dept_id}")`,
         async (err: any, result: any) => {
           if (err) {
-            logger.error(err, {
+            logger.error(err.sqlMessage, {
               action: "User creation",
               status: "failed",
             });

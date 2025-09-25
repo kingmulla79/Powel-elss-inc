@@ -13,60 +13,56 @@ export interface INotifications {
 export class NotificationModelOperations {
   constructor(private not_data: Partial<INotifications>) {}
 
-  NotificationCreation = () => {
-    return new Promise((resolve, reject) => {
-      pool.query(
+  async NotificationCreation() {
+    try {
+      const [result] = await pool.query(
         `INSERT INTO notifications (title, message, not_status, user_id) VALUES (?, ?, ?, ?)`,
         [
           this.not_data.title,
           this.not_data.message,
           this.not_data.not_status,
           this.not_data.user_id,
-        ],
-        async (err, result: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          resolve(result);
-        }
+        ]
       );
-    });
-  };
-  AllNotifications = () => {
-    return new Promise((resolve, reject) => {
-      pool.query("SELECT * FROM notifications", async (err, results: any) => {
-        if (err) {
-          reject(new ErrorHandler(err, 500));
-        }
-        resolve(results);
-      });
-    });
-  };
-  UpdateNotification = () => {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        `UPDATE notifications SET not_status = "read" WHERE not_id = ${this.not_data.not_id}`,
-        async (err, results: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          resolve(results);
-        }
-      );
-    });
-  };
 
-  DeleteNotification = () => {
-    return new Promise((resolve, reject) => {
-      pool.query(
-        `DELETE FROM notifications WHERE created_at < NOW() - INTERVAL 1 MONTH AND not_status = "read"`,
-        async (err, results: any) => {
-          if (err) {
-            reject(new ErrorHandler(err, 500));
-          }
-          resolve(results);
-        }
+      return result;
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
+
+  async AllNotifications() {
+    try {
+      const [results] = await pool.query("SELECT * FROM notifications");
+      return results;
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
+
+  async UpdateNotification() {
+    try {
+      const [results] = await pool.query(
+        `UPDATE notifications SET not_status = ? WHERE not_id = ?`,
+        ["read", this.not_data.not_id]
       );
-    });
-  };
+      return results;
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
+
+  async DeleteNotification() {
+    try {
+      const [results] = await pool.query(
+        `DELETE FROM notifications 
+       WHERE created_at < NOW() - INTERVAL 1 MONTH 
+       AND not_status = ?`,
+        ["read"]
+      );
+      return results;
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
 }

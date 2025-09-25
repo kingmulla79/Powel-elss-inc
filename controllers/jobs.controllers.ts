@@ -16,7 +16,8 @@ import {
 export const JobCreationController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await JobCreationService(req.body, req.user?.user_id);
+      const { cust_id, jobs } = req.body;
+      await JobCreationService(cust_id, jobs, req.user?.user_id);
       res.status(200).json({
         success: true,
         message: `New job created`,

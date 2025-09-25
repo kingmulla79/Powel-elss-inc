@@ -29,7 +29,7 @@ export class InvoiceModelOperations {
 
       return result;
     } catch (err: any) {
-      logger.error(err, {
+      logger.error(err.sqlMessage, {
         action: "Invoice job-list check",
         status: "failed",
       });
@@ -48,7 +48,7 @@ export class InvoiceModelOperations {
 
       return result;
     } catch (err: any) {
-      logger.error(err, {
+      logger.error(err.sqlMessage, {
         action: "Invoice generation",
         status: "failed",
       });
@@ -70,7 +70,7 @@ export class InvoiceModelOperations {
 
       return result;
     } catch (err: any) {
-      logger.error(err, {
+      logger.error(err.sqlMessage, {
         action: "Invoice information update",
         status: "failed",
       });
@@ -108,7 +108,7 @@ export class InvoiceModelOperationsNoData {
 
       return results;
     } catch (err: any) {
-      logger.error(err, {
+      logger.error(err.sqlMessage, {
         action: "All invoices fetch",
         status: "failed",
       });
@@ -169,7 +169,7 @@ export class InvoiceModelOperationsNoData {
 
       return results as Array<any>;
     } catch (err: any) {
-      logger.error(err, {
+      logger.error(err.sqlMessage, {
         action: "Invoice filter query",
         status: "failed",
       });
@@ -186,7 +186,7 @@ export class InvoiceModelOperationsNoData {
 
       return results;
     } catch (err: any) {
-      logger.error(err, {
+      logger.error(err.sqlMessage, {
         action: "Delete invoice",
         status: "failed",
       });

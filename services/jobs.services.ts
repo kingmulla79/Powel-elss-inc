@@ -7,11 +7,15 @@ import {
 } from "../models/jobs.models";
 import { format } from "date-fns";
 
-export const JobCreationService = async (body: IJob, user_id: string) => {
+export const JobCreationService = async (
+  cust_id: string,
+  jobs: Array<Partial<IJob>>,
+  user_id: string
+) => {
   try {
-    const jobCreation = new JobModelOperations(body);
+    const jobCreation = new JobModelOperations({});
 
-    await jobCreation.JobCreation(user_id);
+    await jobCreation.JobCreation(cust_id, jobs, user_id);
   } catch (error: any) {
     logger.error(`Error while creating new job: ${error.message}`, {
       action: "Job creation",

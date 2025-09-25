@@ -53,6 +53,6 @@ export const logger = winston.createLogger({
     }),
   ],
   defaultMeta: {
-    service: "Powel-elss-inc. logger system",
+    service: "Powelelss inc logger system",
   },
 });

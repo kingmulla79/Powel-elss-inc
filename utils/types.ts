@@ -34,3 +34,16 @@ export interface IInvoice {
   invoice_status: string;
   due_date: string;
 }
+
+export interface ILogs {
+  service: string;
+  user_id: string;
+  user_name: string;
+  user_role: string;
+  action: string;
+  status: string;
+  level: string;
+  message: string;
+  timestamp: string;
+  ip: string;
+}

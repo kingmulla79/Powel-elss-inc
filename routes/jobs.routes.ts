@@ -14,7 +14,7 @@ const JobRouter = express.Router();
 
 JobRouter.post(
   "/job-creation",
-  validateJobInformation(),
+  // validateJobInformation(),
   isAuthenticated,
   authorizedRoles("system_admin", "operations_director", "admin"),
   JobCreationController
@@ -29,14 +29,14 @@ JobRouter.get(
 JobRouter.get(
   "/my-jobs/:technicianId",
   isAuthenticated,
-  authorizedRoles("system_admin", "technician"),
+  authorizedRoles("system_admin", "operations_director", "admin"),
   JobByTechnicianController
 );
 
 JobRouter.get(
   "/related-jobs/:job_list_id",
   isAuthenticated,
-  authorizedRoles("system_admin", "technician"),
+  authorizedRoles("system_admin", "operations_director", "admin"),
   JobRelatedJobsFetchController
 );
 
@@ -44,7 +44,7 @@ JobRouter.put(
   "/edit-jobs",
   validateJobInformation(),
   isAuthenticated,
-  authorizedRoles("system_admin", "operations_director", "admin", "technician"),
+  authorizedRoles("system_admin", "operations_director", "admin"),
   JobEditController
 );
 JobRouter.delete(
