@@ -47,3 +47,13 @@ export interface ILogs {
   timestamp: string;
   ip: string;
 }
+
+export interface IExpenses {
+  expense_code: string;
+  invoice_id: string;
+  dept_id: string;
+  expense_description: string;
+  category: string;
+  amount: string;
+  expense_status: string;
+}

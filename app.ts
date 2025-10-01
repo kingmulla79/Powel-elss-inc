@@ -9,6 +9,7 @@ import { contextMiddleware } from "./utils/contextMiddleware";
 import NotificationsRouter from "./routes/notifications.routes";
 import InvoiceRouter from "./routes/invoice.routes";
 import LogRouter from "./routes/logs.routes";
+import ExpensesRouter from "./routes/expenses.routes";
 
 export const app = express();
 
@@ -29,6 +30,7 @@ app.use("/api/jobs", JobRouter);
 app.use("/api/notifications", NotificationsRouter);
 app.use("/api/invoice", InvoiceRouter);
 app.use("/api/logs", LogRouter);
+app.use("/api/expenses", ExpensesRouter);
 
 app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
   const err = new Error(`Route ${req.originalUrl} not found`) as any;

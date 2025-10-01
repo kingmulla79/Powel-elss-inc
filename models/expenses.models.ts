@@ -2,81 +2,56 @@ require("dotenv").config({ quiet: true });
 import ErrorHandler from "../utils/Errorhandler";
 import { pool } from "../config/Database";
 import { logger } from "../utils/logger";
-import { IInvoice, IJob } from "../utils/types";
+import { IExpenses } from "../utils/types";
 
-export class InvoiceModelOperations {
-  constructor(private invoice_data: Partial<IInvoice>) {}
+export class ExpensesModelOperations {
+  constructor(private expense_data: Partial<IExpenses>) {}
 
-  async InvoiceCheck(): Promise<any> {
-    try {
-      const [rows] = await pool.query(
-        "SELECT * FROM invoices WHERE job_list_id = ?",
-        [this.invoice_data.job_list_id]
-      );
-
-      const result = rows as any[];
-
-      if (result.length > 0) {
-        logger.error("There is an invoice record for the job services", {
-          action: "Invoice job-list check",
-          status: "failed",
-        });
-        throw new ErrorHandler(
-          "There is an invoice record for the job services",
-          409
-        );
-      }
-
-      return result;
-    } catch (err: any) {
-      logger.error(err.sqlMessage, {
-        action: "Invoice job-list check",
-        status: "failed",
-      });
-      throw new ErrorHandler(err, 400);
-    }
-  }
-
-  async InvoiceGeneration(): Promise<any> {
-    try {
-      const [result] = await pool.query(`CALL GenerateInvoice(?, ?, ?, ?)`, [
-        this.invoice_data.job_list_id,
-        this.invoice_data.amount,
-        this.invoice_data.invoice_status,
-        this.invoice_data.due_date,
-      ]);
-
-      return result;
-    } catch (err: any) {
-      logger.error(err.sqlMessage, {
-        action: "Invoice generation",
-        status: "failed",
-      });
-      throw new ErrorHandler(err, 400);
-    }
-  }
-
-  async InvoiceEditing(): Promise<any> {
+  async ExpenseGeneration(): Promise<any> {
     try {
       const [result] = await pool.query(
-        `UPDATE invoices SET invoice_status = ?, amount = ?, due_date = ? WHERE job_list_id = ?`,
+        `CALL GenerateExpense(?, ?, ?, ?, ?, ?)`,
         [
-          this.invoice_data.invoice_status,
-          this.invoice_data.amount,
-          this.invoice_data.due_date,
-          this.invoice_data.job_list_id,
+          this.expense_data.invoice_id,
+          this.expense_data.dept_id,
+          this.expense_data.amount,
+          this.expense_data.expense_description,
+          this.expense_data.category,
+          this.expense_data.expense_status,
         ]
       );
 
       return result;
     } catch (err: any) {
       logger.error(err.sqlMessage, {
-        action: "Invoice information update",
+        action: "Expense generation",
         status: "failed",
       });
       throw new ErrorHandler(err, 400);
     }
   }
+
+  //   async InvoiceEditing(): Promise<any> {
+  //     try {
+  //       const [result] = await pool.query(
+  //         `UPDATE invoices SET invoice_status = ?, amount = ?, due_date = ? WHERE job_list_id = ?`,
+  //         [
+  //           this.invoice_data.invoice_status,
+  //           this.invoice_data.amount,
+  //           this.invoice_data.due_date,
+  //           this.invoice_data.job_list_id,
+  //         ]
+  //       );
+
+  //       return result;
+  //     } catch (err: any) {
+  //       logger.error(err.sqlMessage, {
+  //         action: "Invoice information update",
+  //         status: "failed",
+  //       });
+  //       throw new ErrorHandler(err, 400);
+  //     }
+  //   }
 }
 
 export class InvoiceModelOperationsNoData {

@@ -6,16 +6,16 @@ import {
   InvoiceModelOperations,
   InvoiceModelOperationsNoData,
 } from "../models/invoice.models";
+import { ExpensesModelOperations } from "../models/expenses.models";
 
-export const InvoiceGenerationService = async (body: IInvoice) => {
+export const ExpenseGenerationService = async (body: IInvoice) => {
   try {
-    const invoiceGeneration = new InvoiceModelOperations(body);
+    const expenseGeneration = new ExpensesModelOperations(body);
 
-    await invoiceGeneration.InvoiceCheck();
-    await invoiceGeneration.InvoiceGeneration();
+    await expenseGeneration.ExpenseGeneration();
   } catch (error: any) {
-    logger.error(`Error while generating new invoice: ${error.message}`, {
-      action: "Invoice generation",
+    logger.error(`Error while generating new expense: ${error.message}`, {
+      action: "Expense generation",
       status: "failed",
     });
     throw new ErrorHandler(error.message, 500);

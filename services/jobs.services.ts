@@ -59,44 +59,6 @@ export const JobFetchService = async (): Promise<{ jobData: Array<any> }> => {
   }
 };
 
-export const JobRelatedJobsFetchService = async (
-  job_list_id: string
-): Promise<{
-  jobData: Array<any>;
-}> => {
-  try {
-    let jobData: any;
-    const jobFetch = new JobModelOperationsNoData();
-
-    await jobFetch
-      .JobFilter("job_list_id", job_list_id)
-      .then((results: any) => {
-        results.forEach((result: any) => {
-          const datetime = new Date(result.scheduled_date);
-          const datePart = format(datetime, "yyyy-MM-dd"); // "2025-09-20"
-          const timePart = format(datetime, "HH:mm:ss");
-          result.scheduled_date = datePart;
-          result.scheduled_time = timePart;
-        });
-        jobData = results;
-      })
-      .catch((error) => {
-        logger.error(`Error while fetching job information: ${error.message}`, {
-          action: "Job information fetch",
-          status: "failed",
-        });
-        throw new ErrorHandler(error.message, 500);
-      });
-    return jobData;
-  } catch (error: any) {
-    logger.error(`Error while fetching job information: ${error.message}`, {
-      action: "Job information fetch",
-      status: "failed",
-    });
-    throw new ErrorHandler(error.message, 500);
-  }
-};
-
 export const JobByTechnicianService = async (
   assigned_technician_id: string
 ): Promise<{ technicianJobData: Array<any> }> => {
