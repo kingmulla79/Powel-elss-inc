@@ -119,3 +119,17 @@ export const InvoiceDeleteService = async (invoice_id: string) => {
     throw new ErrorHandler(error.message, 500);
   }
 };
+
+export const PermanentInvoiceDeletionService = async () => {
+  try {
+    const jobDelete = new JobModelOperationsNoData();
+
+    await jobDelete.PermanentJobDeletion();
+  } catch (error: any) {
+    logger.error(`Error while deleting invoices: ${error.message}`, {
+      action: "Invoice deletion",
+      status: "failed",
+    });
+    throw new ErrorHandler(error.message, 500);
+  }
+};

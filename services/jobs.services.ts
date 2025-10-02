@@ -35,7 +35,7 @@ export const JobFetchService = async (): Promise<{ jobData: Array<any> }> => {
       .then((results: any) => {
         results.forEach((result: any) => {
           const datetime = new Date(result.scheduled_date);
-          const datePart = format(datetime, "yyyy-MM-dd"); // "2025-09-20"
+          const datePart = format(datetime, "yyyy-MM-dd");
           const timePart = format(datetime, "HH:mm:ss");
           result.scheduled_date = datePart;
           result.scheduled_time = timePart;
@@ -96,14 +96,26 @@ export const JobByTechnicianService = async (
   }
 };
 
-export const JobEditService = async (body: IJob, user_role: string) => {
+export const JobEditService = async (body: IJob) => {
   try {
     const jobEntrySearch = new JobModelOperationsNoData();
 
-    const jobData = await jobEntrySearch.JobFilter(
-      "job_id",
-      body.job_id ? body.job_id : ""
-    );
+    const jobData = await jobEntrySearch.JobFilter("job_id", body.job_id);
+
+    if (jobData.length < 1) {
+      logger.error(`No job record with the specified job_id`, {
+        action: "Job information editing",
+        status: "failed",
+      });
+      throw new ErrorHandler("No job record with the specified job_id", 404);
+    }
+
+    const datetime = new Date(jobData[0].scheduled_date);
+    const datePart = format(datetime, "yyyy-MM-dd");
+    const timePart = format(datetime, "HH:mm:ss");
+
+    const databaseScheduledDate = `${datePart} ${timePart}`;
+
     const {
       job_title,
       job_type,
@@ -118,33 +130,24 @@ export const JobEditService = async (body: IJob, user_role: string) => {
     } = body;
 
     if (
-      job_title === jobData[0].job_title &&
-      job_type === jobData[0].job_type &&
-      job_status === jobData[0].job_status &&
-      job_description === jobData[0].job_description &&
-      job_location === jobData[0].job_location &&
-      priority === jobData[0].priority &&
-      estimated_time === jobData[0].estimated_time &&
-      assigned_technician_id?.toString() ===
-        jobData[0].assigned_technician_id?.toString() &&
-      scheduled_date === jobData[0].scheduled_date &&
-      job_notes === jobData[0].job_notes
+      jobData[0].job_title === job_title &&
+      jobData[0].job_type === job_type &&
+      jobData[0].job_status === job_status &&
+      jobData[0].job_description === job_description &&
+      jobData[0].job_location === job_location &&
+      jobData[0].priority === priority &&
+      jobData[0].estimated_time === estimated_time &&
+      jobData[0].assigned_technician_id?.toString() ===
+        assigned_technician_id?.toString() &&
+      databaseScheduledDate === scheduled_date &&
+      jobData[0].job_notes === job_notes
     ) {
       throw new ErrorHandler(
         `Updated job information cannot be the same as the available one`,
         409
       );
     }
-    if (
-      (job_status === "assigned" && user_role !== "system_admin") ||
-      "admin" ||
-      "operations_manager"
-    ) {
-      throw new ErrorHandler(
-        `Unauthorized operations for user role: ${user_role}`,
-        401
-      );
-    }
+
     const jobUpdate = new JobModelOperations(body);
 
     await jobUpdate.JobUpdate();
@@ -165,6 +168,37 @@ export const JobDeleteService = async (job_id: string) => {
   } catch (error: any) {
     logger.error(`Error while deleting job - ${job_id}: ${error.message}`, {
       action: "Job deletion",
+      status: "failed",
+    });
+    throw new ErrorHandler(error.message, 500);
+  }
+};
+
+export const PermanentJobDeletionService = async () => {
+  try {
+    const jobDeletion = new JobModelOperationsNoData();
+
+    await jobDeletion
+      .PermanentJobDeletion()
+      .then(() => {
+        logger.info(`Jobs deleted 30 days successfully removed`, {
+          action: "Jobs deletion",
+          status: "success",
+        });
+      })
+      .catch((error: any) => {
+        logger.error(
+          `Error while deleting jobs information: ${error.message}`,
+          {
+            action: "Jobs deletion",
+            status: "failed",
+          }
+        );
+        throw new ErrorHandler(error.message, 500);
+      });
+  } catch (error: any) {
+    logger.error(`Error while deleting jobs information: ${error.message}`, {
+      action: "Jobs deletion",
       status: "failed",
     });
     throw new ErrorHandler(error.message, 500);

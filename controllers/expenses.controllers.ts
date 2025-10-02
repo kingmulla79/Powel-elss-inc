@@ -3,15 +3,14 @@ import { Request, Response, NextFunction } from "express";
 import ErrorHandler from "../utils/Errorhandler";
 import { CatchAsyncError } from "../middleware/CatchAsyncErrors";
 import { logger } from "../utils/logger";
+import cron from "node-cron";
 
 import {
-  InvoiceDeleteService,
-  InvoiceEditService,
-} from "../services/invoice.services";
-import {
+  ExpenseDeleteService,
   ExpenseFetchService,
   ExpenseGenerationService,
   ExpensesEditService,
+  PermanentExpenseDeletionService,
 } from "../services/expenses.services";
 
 export const ExpensesGenerationController = CatchAsyncError(
@@ -68,17 +67,17 @@ export const ExpensesEditController = CatchAsyncError(
   }
 );
 
-export const InvoiceDeleteController = CatchAsyncError(
+export const ExpenseDeleteController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { invoice_id } = req.params;
-      await InvoiceDeleteService(invoice_id);
+      const { expense_id } = req.params;
+      await ExpenseDeleteService(expense_id);
       res.status(200).json({
         success: true,
-        message: `Invoice: ${invoice_id} deleted successfully`,
+        message: `Expense: ${expense_id} deleted successfully`,
       });
       logger.info(
-        `Invoice: ${invoice_id} deleted successfully by: ${req.user?.user_id}`
+        `Expense: ${expense_id} deleted successfully by: ${req.user?.user_id}`
       );
     } catch (error: any) {
       if (error) {
@@ -87,3 +86,13 @@ export const InvoiceDeleteController = CatchAsyncError(
     }
   }
 );
+
+cron.schedule("0 0 * * *", async () => {
+  await PermanentExpenseDeletionService();
+  logger.info("Removing deleted expenses", {
+    action: "Expense deletion",
+    status: "success",
+  });
+  console.log("_____________");
+  console.log("running cron: removing deleted expenses");
+});

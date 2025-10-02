@@ -14,6 +14,7 @@ import {
   UserUpdateUserPasswordService,
   UserUpdateUserRoleService,
   UserUpdateProfilePicService,
+  UserPermanentDeletionService,
 } from "../services/user.services";
 import { logger } from "../utils/logger";
 import { refreshTokenOptions, sendToken } from "..//utils/jwt";
@@ -316,4 +317,14 @@ cron.schedule("0 0 * * *", () => {
   });
   console.log("_____________");
   console.log(`running cron: backing up system database on ${new Date()}`);
+});
+
+cron.schedule("0 0 * * *", async () => {
+  await UserPermanentDeletionService();
+  logger.info(`Removing deleted users`, {
+    action: "User deletion",
+    status: "success",
+  });
+  console.log("_____________");
+  console.log(`running cron: removing deleted users`);
 });

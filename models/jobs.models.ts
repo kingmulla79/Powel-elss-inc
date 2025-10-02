@@ -57,26 +57,7 @@ export class JobModelOperations {
   async AllTechnicianJobs() {
     try {
       const [results] = await pool.query(
-        `SELECT j.job_id, 
-              j.job_list_id, 
-              j.job_title, 
-              j.job_type, 
-              j.job_status, 
-              j.job_description, 
-              j.job_location, 
-              j.priority, 
-              j.estimated_time, 
-              j.scheduled_date, 
-              j.job_notes, 
-              j.assigned_technician_id, 
-              e.first_name AS technician_first_name, 
-              e.surname AS technician_surname, 
-              j.created_at, 
-              j.updated_at  
-       FROM jobs j 
-       JOIN employees e 
-         ON j.assigned_technician_id = e.emp_id 
-       WHERE assigned_technician_id = ?`,
+        `SELECT * FROM job_info WHERE assigned_technician_id = ?`,
         [this.job_data.assigned_technician_id]
       );
       return results;
@@ -113,27 +94,7 @@ export class JobModelOperations {
 export class JobModelOperationsNoData {
   async AllJobs() {
     try {
-      const [results] = await pool.query(
-        `SELECT j.job_id, 
-              j.job_list_id, 
-              j.job_title, 
-              j.job_type, 
-              j.job_status, 
-              j.job_description, 
-              j.job_location, 
-              j.priority, 
-              j.estimated_time, 
-              j.scheduled_date, 
-              j.job_notes, 
-              j.assigned_technician_id, 
-              e.first_name AS technician_first_name, 
-              e.surname AS technician_surname, 
-              j.created_at, 
-              j.updated_at  
-       FROM jobs j 
-       JOIN employees e 
-         ON j.assigned_technician_id = e.emp_id`
-      );
+      const [results] = await pool.query(`SELECT * FROM job_info`);
       return results;
     } catch (err: any) {
       throw new ErrorHandler(err, 500);
@@ -145,7 +106,6 @@ export class JobModelOperationsNoData {
     filter_data: string
   ): Promise<Array<IJob>> {
     try {
-      // Whitelist allowed filter columns
       const allowedColumns = [
         "job_id",
         "job_list_id",
@@ -161,26 +121,7 @@ export class JobModelOperationsNoData {
         throw new ErrorHandler(`Invalid filter column: ${filter_column}`, 400);
       }
 
-      const query = `
-      SELECT j.job_id, 
-             j.job_list_id, 
-             j.job_title, 
-             j.job_type, 
-             j.job_status, 
-             j.job_description, 
-             j.job_location, 
-             j.priority, 
-             j.estimated_time, 
-             j.scheduled_date, 
-             j.job_notes, 
-             j.assigned_technician_id, 
-             e.first_name AS technician_first_name, 
-             e.surname AS technician_surname, 
-             j.created_at, 
-             j.updated_at
-      FROM jobs j
-      JOIN employees e ON j.assigned_technician_id = e.emp_id
-      WHERE j.${filter_column} = ?`;
+      const query = `SELECT * FROM job_info WHERE ${filter_column} = ?`;
 
       const [results] = await pool.query(query, [filter_data]);
       return results as Array<IJob>;
@@ -189,11 +130,22 @@ export class JobModelOperationsNoData {
     }
   }
 
-  DeleteJob = (job_id: string) => {
+  async DeleteJob(job_id: string) {
     try {
-      pool.query(`DELETE FROM jobs WHERE job_id = ?`, [job_id]);
+      await pool.query(`UPDATE jobs SET deleted_at = NOW() WHERE job_id = ?`, [
+        job_id,
+      ]);
     } catch (error) {
       throw new ErrorHandler(error, 500);
     }
-  };
+  }
+  async PermanentJobDeletion() {
+    try {
+      await pool.query(
+        `DELETE FROM jobs WHERE deleted_at < NOW() - INTERVAL 1 MONTH`
+      );
+    } catch (error) {
+      throw new ErrorHandler(error, 500);
+    }
+  }
 }

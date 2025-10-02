@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { logger } from "../utils/logger";
-import { JobCreationSchema } from "../models/jobs.validationSchema";
+import { JobSchema } from "../models/jobs.validationSchema";
 
 export const validateJobInformation =
   () =>
   (req: Request, res: Response, next: NextFunction): void => {
     try {
-      JobCreationSchema.parse(req.body);
+      JobSchema.parse(req.body);
       next();
     } catch (error) {
       if (error instanceof ZodError) {

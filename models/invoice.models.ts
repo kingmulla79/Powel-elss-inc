@@ -137,7 +137,7 @@ export class InvoiceModelOperationsNoData {
   async DeleteInvoice(invoice_id: string) {
     try {
       const [results] = await pool.query(
-        `DELETE FROM invoices WHERE invoice_id = ?`,
+        `UPDATE invoices SET deleted_at = NOW() WHERE invoice_id = ?`,
         [invoice_id]
       );
 
@@ -145,6 +145,20 @@ export class InvoiceModelOperationsNoData {
     } catch (err: any) {
       logger.error(err.sqlMessage, {
         action: "Delete invoice",
+        status: "failed",
+      });
+      throw new ErrorHandler(err, 500);
+    }
+  }
+
+  async PermanentInvoiceDeletion() {
+    try {
+      await pool.query(
+        `DELETE FROM invoices WHERE deleted_at < NOW() - INTERVAL 1 MONTH`
+      );
+    } catch (err: any) {
+      logger.error(err.sqlMessage, {
+        action: "Invoice deletion",
         status: "failed",
       });
       throw new ErrorHandler(err, 500);

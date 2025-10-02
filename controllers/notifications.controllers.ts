@@ -40,7 +40,6 @@ export const UpdateNotifications = CatchAsyncError(
   }
 );
 
-//delete read notifications
 cron.schedule("0 0 * * *", async () => {
   await NotificationDeletionService();
   logger.info("Deleting read notification", {

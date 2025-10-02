@@ -397,14 +397,6 @@ export const UserDeleteUserService = async (
   try {
     const deleteUser = new UserModelOperationsNoData();
 
-    await deleteUser.UserById(parseInt(user_id)).then(async (result: any) => {
-      if (result[0].avatar_public_id) {
-        await DeleteProfilePicture(
-          result[0].avatar_public_id,
-          result[0].user_id
-        );
-      }
-    });
     const notification: Omit<INotifications, "not_id"> = {
       message: `User by id ${user_id} successfully deleted by ${user_data.user_id} - ${user_data.surname}`,
       not_status: "unread",
@@ -431,7 +423,30 @@ export const UserDeleteUserService = async (
       user_id: `${user_data.user_id}`,
       user_name: `${user_data.first_name} ${user_data.surname}`,
       user_role: `${user_data.user_id}`,
-      action: "User role update",
+      action: "User deletion",
+      status: "failed",
+    });
+    throw new ErrorHandler(error.message, 500);
+  }
+};
+
+export const UserPermanentDeletionService = async () => {
+  try {
+    const deleteUser = new UserModelOperationsNoData();
+
+    // await deleteUser.UserById(parseInt(user_id)).then(async (result: any) => {
+    //   if (result[0].avatar_public_id) {
+    //     await DeleteProfilePicture(
+    //       result[0].avatar_public_id,
+    //       result[0].user_id
+    //     );
+    //   }
+    // });
+
+    await deleteUser.PermanentUserDeletion();
+  } catch (error: any) {
+    logger.error(`Error while deleting user information: ${error.message}`, {
+      action: "User deletion",
       status: "failed",
     });
     throw new ErrorHandler(error.message, 500);

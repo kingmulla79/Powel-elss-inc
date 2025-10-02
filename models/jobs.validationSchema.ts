@@ -6,7 +6,7 @@ const passwordPattern: RegExp =
 const priority = ["high", "low", "medium", "critical"] as const;
 const status = ["pending", "assigned", "in_progress", "completed"] as const;
 
-export const JobCreationSchema = z.object({
+export const JobSchema = z.object({
   job_title: z.string(),
   job_type: z.string(),
   job_status: z.enum(status),

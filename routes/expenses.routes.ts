@@ -1,6 +1,7 @@
 import express from "express";
 import { authorizedRoles, isAuthenticated } from "../middleware/Auth";
 import {
+  ExpenseDeleteController,
   ExpensesEditController,
   ExpensesFetchController,
   ExpensesGenerationController,
@@ -33,6 +34,13 @@ ExpensesRouter.put(
   isAuthenticated,
   authorizedRoles("system_admin", "admin"),
   ExpensesEditController
+);
+
+ExpensesRouter.delete(
+  "/delete-expense/:expense_id",
+  isAuthenticated,
+  authorizedRoles("system_admin", "admin"),
+  ExpenseDeleteController
 );
 
 export default ExpensesRouter;

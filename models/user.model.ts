@@ -153,24 +153,7 @@ export class UserModelOperations {
 export class UserModelOperationsNoData {
   async AllUsers(): Promise<any[]> {
     try {
-      const [results] = await pool.query(
-        `SELECT 
-         u.user_id, 
-         u.first_name, 
-         u.surname, 
-         u.email, 
-         u.user_password, 
-         u.phone, 
-         u.avatar_public_id, 
-         u.avatar_url, 
-         u.user_role, 
-         d.dept_id, 
-         d.dept_name, 
-         u.created_at, 
-         u.updated_at  
-       FROM users u 
-       JOIN department d ON u.dept_id = d.dept_id`
-      );
+      const [results] = await pool.query(`SELECT * FROM user_info`);
 
       return results as any[];
     } catch (err: any) {
@@ -210,7 +193,7 @@ export class UserModelOperationsNoData {
         throw new ErrorHandler("No users by the provided id", 401);
       }
 
-      return users[0]; // return the single matching user
+      return users[0];
     } catch (err: any) {
       throw new ErrorHandler(err, 500);
     }
@@ -223,23 +206,31 @@ export class UserModelOperationsNoData {
         [role, id]
       );
 
-      return result; // MySQL update result (affectedRows, etc.)
+      return result;
     } catch (err: any) {
       throw new ErrorHandler(err, 500);
     }
   }
 
-  async DeleteUser(user_id: number): Promise<any> {
+  async DeleteUser(user_id: number) {
     try {
-      const [result] = await pool.query(`DELETE FROM users WHERE user_id = ?`, [
-        user_id,
-      ]);
+      const [result] = await pool.query(
+        `UPDATE users SET deleted_at = NOW() WHERE user_id = ?`,
+        [user_id]
+      );
 
       if ((result as any).affectedRows === 0) {
         throw new ErrorHandler("No user found with the provided id", 404);
       }
-
-      return result; // contains affectedRows, warningStatus, etc.
+    } catch (err: any) {
+      throw new ErrorHandler(err, 500);
+    }
+  }
+  async PermanentUserDeletion() {
+    try {
+      await pool.query(
+        `DELETE FROM users WHERE deleted_at < NOW() - INTERVAL 1 MONTH`
+      );
     } catch (err: any) {
       throw new ErrorHandler(err, 500);
     }

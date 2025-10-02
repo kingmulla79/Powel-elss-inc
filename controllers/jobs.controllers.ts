@@ -2,7 +2,7 @@ require("dotenv").config({ quiet: true });
 import { Request, Response, NextFunction } from "express";
 import ErrorHandler from "../utils/Errorhandler";
 import { CatchAsyncError } from "../middleware/CatchAsyncErrors";
-
+import cron from "node-cron";
 import { logger } from "../utils/logger";
 import {
   JobByTechnicianService,
@@ -10,7 +10,7 @@ import {
   JobDeleteService,
   JobEditService,
   JobFetchService,
-  JobRelatedJobsFetchService,
+  PermanentJobDeletionService,
 } from "../services/jobs.services";
 
 export const JobCreationController = CatchAsyncError(
@@ -49,25 +49,6 @@ export const JobFetchController = CatchAsyncError(
   }
 );
 
-export const JobRelatedJobsFetchController = CatchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { job_list_id } = req.params;
-      const jobData = await JobRelatedJobsFetchService(job_list_id);
-      res.status(200).json({
-        success: true,
-        jobs: jobData,
-        message: `All jobs data fetched successfully`,
-      });
-      logger.info(`All jobs data fetched by: ${req.user?.user_id}`);
-    } catch (error: any) {
-      if (error) {
-        return next(new ErrorHandler(error.message, 500));
-      }
-    }
-  }
-);
-
 export const JobByTechnicianController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -92,7 +73,7 @@ export const JobByTechnicianController = CatchAsyncError(
 export const JobEditController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await JobEditService(req.body, req.user?.user_role || "");
+      await JobEditService(req.body);
       res.status(200).json({
         success: true,
         message: `Job ${req.body.job_id} successfully edited`,
@@ -127,3 +108,13 @@ export const JobDeleteController = CatchAsyncError(
     }
   }
 );
+
+cron.schedule("0 0 * * *", async () => {
+  await PermanentJobDeletionService();
+  logger.info("Removing deleted jobs", {
+    action: "Jobs deletion",
+    status: "success",
+  });
+  console.log("_____________");
+  console.log("running cron: removing deleted jobs");
+});

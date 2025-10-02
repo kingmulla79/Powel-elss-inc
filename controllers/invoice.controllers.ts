@@ -8,7 +8,9 @@ import {
   InvoiceEditService,
   InvoiceFetchService,
   InvoiceGenerationService,
+  PermanentInvoiceDeletionService,
 } from "../services/invoice.services";
+import cron from "node-cron";
 
 export const InvoiceCreationController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -83,3 +85,13 @@ export const InvoiceDeleteController = CatchAsyncError(
     }
   }
 );
+
+cron.schedule("0 0 * * *", async () => {
+  await PermanentInvoiceDeletionService();
+  logger.info("Removing deleted invoice", {
+    action: "Invoice deletion",
+    status: "success",
+  });
+  console.log("_____________");
+  console.log("running cron: removing deleted invoices");
+});

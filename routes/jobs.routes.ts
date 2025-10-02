@@ -7,7 +7,6 @@ import {
   JobDeleteController,
   JobEditController,
   JobFetchController,
-  JobRelatedJobsFetchController,
 } from "../controllers/jobs.controllers";
 
 const JobRouter = express.Router();
@@ -31,13 +30,6 @@ JobRouter.get(
   isAuthenticated,
   authorizedRoles("system_admin", "operations_director", "admin"),
   JobByTechnicianController
-);
-
-JobRouter.get(
-  "/related-jobs/:job_list_id",
-  isAuthenticated,
-  authorizedRoles("system_admin", "operations_director", "admin"),
-  JobRelatedJobsFetchController
 );
 
 JobRouter.put(

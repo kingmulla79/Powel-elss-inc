@@ -105,17 +105,30 @@ export class ExpensesModelOperationsNoData {
     }
   }
 
-  async DeleteInvoice(invoice_id: string) {
+  async DeleteExpense(expense_id: string) {
     try {
       const [results] = await pool.query(
-        `DELETE FROM invoices WHERE invoice_id = ?`,
-        [invoice_id]
+        `UPDATE expenses SET deleted_at = NOW() WHERE expense_id = ?`,
+        [expense_id]
       );
 
       return results;
     } catch (err: any) {
       logger.error(err.sqlMessage, {
-        action: "Delete invoice",
+        action: "Expense deletion operation",
+        status: "failed",
+      });
+      throw new ErrorHandler(err, 500);
+    }
+  }
+  async PermanentExpenseDeletion() {
+    try {
+      await pool.query(
+        `DELETE FROM expenses WHERE deleted_at < NOW() - INTERVAL 1 MONTH`
+      );
+    } catch (err: any) {
+      logger.error(err.sqlMessage, {
+        action: "Expense deletion operation",
         status: "failed",
       });
       throw new ErrorHandler(err, 500);

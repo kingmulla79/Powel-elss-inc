@@ -1,11 +1,6 @@
 import { IExpenses, IInvoice } from "../utils/types";
 import ErrorHandler from "../utils/Errorhandler";
 import { logger } from "../utils/logger";
-import { JobModelOperationsNoData } from "../models/jobs.models";
-import {
-  InvoiceModelOperations,
-  InvoiceModelOperationsNoData,
-} from "../models/invoice.models";
 import {
   ExpensesModelOperations,
   ExpensesModelOperationsNoData,
@@ -113,19 +108,33 @@ export const ExpensesEditService = async (body: IExpenses) => {
   }
 };
 
-export const InvoiceDeleteService = async (invoice_id: string) => {
+export const ExpenseDeleteService = async (expense_id: string) => {
   try {
-    const jobDelete = new JobModelOperationsNoData();
+    const expenseDelete = new ExpensesModelOperationsNoData();
 
-    await jobDelete.DeleteJob(invoice_id);
+    await expenseDelete.DeleteExpense(expense_id);
   } catch (error: any) {
     logger.error(
-      `Error while deleting invoice - ${invoice_id}: ${error.message}`,
+      `Error while deleting expense - ${expense_id}: ${error.message}`,
       {
-        action: "Invoice deletion",
+        action: "Expense deletion",
         status: "failed",
       }
     );
+    throw new ErrorHandler(error.message, 500);
+  }
+};
+
+export const PermanentExpenseDeletionService = async () => {
+  try {
+    const expenseDelete = new ExpensesModelOperationsNoData();
+
+    await expenseDelete.PermanentExpenseDeletion();
+  } catch (error: any) {
+    logger.error(`Error while deleting expense: ${error.message}`, {
+      action: "Expense deletion",
+      status: "failed",
+    });
     throw new ErrorHandler(error.message, 500);
   }
 };
