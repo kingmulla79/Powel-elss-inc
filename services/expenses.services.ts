@@ -1,4 +1,4 @@
-import { IInvoice } from "../utils/types";
+import { IExpenses, IInvoice } from "../utils/types";
 import ErrorHandler from "../utils/Errorhandler";
 import { logger } from "../utils/logger";
 import { JobModelOperationsNoData } from "../models/jobs.models";
@@ -6,7 +6,10 @@ import {
   InvoiceModelOperations,
   InvoiceModelOperationsNoData,
 } from "../models/invoice.models";
-import { ExpensesModelOperations } from "../models/expenses.models";
+import {
+  ExpensesModelOperations,
+  ExpensesModelOperationsNoData,
+} from "../models/expenses.models";
 
 export const ExpenseGenerationService = async (body: IInvoice) => {
   try {
@@ -22,81 +25,88 @@ export const ExpenseGenerationService = async (body: IInvoice) => {
   }
 };
 
-export const InvoiceEditService = async (body: IInvoice) => {
+export const ExpenseFetchService = async (): Promise<{
+  jobData: Array<any>;
+}> => {
   try {
-    const { invoice_status, job_list_id, amount, due_date } = body;
+    let expenseData: any;
+    const expenseFetch = new ExpensesModelOperationsNoData();
 
-    const invoiceData = new InvoiceModelOperationsNoData();
-
-    const invoiceResults = await invoiceData.InvoiceFilter(
-      `i.job_list_id`,
-      `${job_list_id}`
-    );
-
-    if (invoiceResults.length < 1) {
-      logger.error(`No invoice record with the specified job-list id`, {
-        action: "Invoice information editing",
-        status: "failed",
-      });
-      throw new ErrorHandler(
-        "No invoice record with the specified job-list id",
-        404
-      );
-    }
-
-    if (
-      invoiceResults[0].invoice_status === invoice_status &&
-      invoiceResults[0].amount === amount &&
-      invoiceResults[0].due_date === due_date
-    ) {
-      logger.error(
-        "Updated invoice information cannot be the same as the available one",
-        {
-          action: "Invoice information editing",
+    await expenseFetch
+      .AllExpenses()
+      .then((results: any) => {
+        expenseData = results;
+      })
+      .catch((error) => {
+        logger.error(`Error while fetching expenses: ${error.message}`, {
+          action: "Expense data fetch",
           status: "failed",
-        }
-      );
-      throw new ErrorHandler(
-        `Updated invoice information cannot be the same as the available one`,
-        409
-      );
-    }
-
-    const invoiceEdit = new InvoiceModelOperations(body);
-
-    await invoiceEdit.InvoiceEditing();
+        });
+        throw new ErrorHandler(error.message, 500);
+      });
+    return expenseData;
   } catch (error: any) {
-    logger.error(`Error while editing invoice information: ${error.message}`, {
-      action: "Invoice information editing",
+    logger.error(`Error while fetching expense information: ${error.message}`, {
+      action: "Expense information fetch",
       status: "failed",
     });
     throw new ErrorHandler(error.message, 500);
   }
 };
 
-export const InvoiceFetchService = async (): Promise<{
-  jobData: Array<any>;
-}> => {
+export const ExpensesEditService = async (body: IExpenses) => {
   try {
-    let invoiceData: any;
-    const invoiceFetch = new InvoiceModelOperationsNoData();
+    const {
+      expense_id,
+      expense_description,
+      expense_status,
+      amount,
+      category,
+    } = body;
 
-    await invoiceFetch
-      .AllInvoices()
-      .then((results: any) => {
-        invoiceData = results;
-      })
-      .catch((error) => {
-        logger.error(`Error while fetching invoices: ${error.message}`, {
-          action: "Invoice data fetch",
-          status: "failed",
-        });
-        throw new ErrorHandler(error.message, 500);
+    const expenseData = new ExpensesModelOperationsNoData();
+
+    const expenseResults = await expenseData.ExpenseFilter(
+      `expense_id`,
+      `${expense_id}`
+    );
+
+    if (expenseResults.length < 1) {
+      logger.error(`No expense record with the specified expense id`, {
+        action: "Expense information editing",
+        status: "failed",
       });
-    return invoiceData;
+      throw new ErrorHandler(
+        "No expense record with the specified expense id",
+        404
+      );
+    }
+
+    if (
+      expenseResults[0].expense_description === expense_description &&
+      expenseResults[0].amount === amount &&
+      expenseResults[0].expense_status === expense_status &&
+      expenseResults[0].category === category
+    ) {
+      logger.error(
+        "Updated expense information cannot be the same as the available one",
+        {
+          action: "Expense information editing",
+          status: "failed",
+        }
+      );
+      throw new ErrorHandler(
+        `Updated expense invoice information cannot be the same as the available one`,
+        409
+      );
+    }
+
+    const expenseEdit = new ExpensesModelOperations(body);
+
+    await expenseEdit.ExpenseEditing();
   } catch (error: any) {
-    logger.error(`Error while fetching job information: ${error.message}`, {
-      action: "Job information fetch",
+    logger.error(`Error while editing expense information: ${error.message}`, {
+      action: "Expense information editing",
       status: "failed",
     });
     throw new ErrorHandler(error.message, 500);

@@ -95,8 +95,8 @@ export const InvoiceFetchService = async (): Promise<{
       });
     return invoiceData;
   } catch (error: any) {
-    logger.error(`Error while fetching job information: ${error.message}`, {
-      action: "Job information fetch",
+    logger.error(`Error while fetching invoice information: ${error.message}`, {
+      action: "Invoice information fetch",
       status: "failed",
     });
     throw new ErrorHandler(error.message, 500);

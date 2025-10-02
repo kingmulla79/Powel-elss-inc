@@ -2,13 +2,7 @@ require("dotenv").config({ quiet: true });
 import { Request, Response, NextFunction } from "express";
 import ErrorHandler from "../utils/Errorhandler";
 import { CatchAsyncError } from "../middleware/CatchAsyncErrors";
-
 import { logger } from "../utils/logger";
-import {
-  JobByTechnicianService,
-  JobDeleteService,
-  JobEditService,
-} from "../services/jobs.services";
 import {
   InvoiceDeleteService,
   InvoiceEditService,
@@ -81,66 +75,6 @@ export const InvoiceDeleteController = CatchAsyncError(
       });
       logger.info(
         `Invoice: ${invoice_id} deleted successfully by: ${req.user?.user_id}`
-      );
-    } catch (error: any) {
-      if (error) {
-        return next(new ErrorHandler(error.message, 500));
-      }
-    }
-  }
-);
-
-export const JobByTechnicianController = CatchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { technicianId } = req.params;
-      const technicianJobData = await JobByTechnicianService(technicianId);
-      res.status(200).json({
-        success: true,
-        jobs: technicianJobData,
-        message: `All jobs for the technician ${technicianId} data fetched by: ${req.user?.user_id}`,
-      });
-      logger.info(
-        `All jobs for the technician ${technicianId} data fetched by: ${req.user?.user_id}`
-      );
-    } catch (error: any) {
-      if (error) {
-        return next(new ErrorHandler(error.message, 500));
-      }
-    }
-  }
-);
-
-export const JobEditController = CatchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await JobEditService(req.body, req.user?.user_role || "");
-      res.status(200).json({
-        success: true,
-        message: `Job ${req.body.job_id} successfully edited by : ${req.user?.user_id}`,
-      });
-      logger.info(
-        `Job ${req.body.job_id} successfully edited by : ${req.user?.user_id}`
-      );
-    } catch (error: any) {
-      if (error) {
-        return next(new ErrorHandler(error.message, 500));
-      }
-    }
-  }
-);
-
-export const JobDeleteController = CatchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { job_id } = req.params;
-      await JobDeleteService(job_id);
-      res.status(200).json({
-        success: true,
-        message: `Job ${job_id} successfully deleted by : ${req.user?.user_id}`,
-      });
-      logger.info(
-        `Job ${job_id} successfully deleted by : ${req.user?.user_id}`
       );
     } catch (error: any) {
       if (error) {

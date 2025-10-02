@@ -49,8 +49,9 @@ export interface ILogs {
 }
 
 export interface IExpenses {
+  expense_id: string;
   expense_code: string;
-  invoice_id: string;
+  job_list_id: string;
   dept_id: string;
   expense_description: string;
   category: string;

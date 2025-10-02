@@ -12,7 +12,7 @@ export class ExpensesModelOperations {
       const [result] = await pool.query(
         `CALL GenerateExpense(?, ?, ?, ?, ?, ?)`,
         [
-          this.expense_data.invoice_id,
+          this.expense_data.job_list_id,
           this.expense_data.dept_id,
           this.expense_data.amount,
           this.expense_data.expense_description,
@@ -31,33 +31,34 @@ export class ExpensesModelOperations {
     }
   }
 
-  //   async InvoiceEditing(): Promise<any> {
-  //     try {
-  //       const [result] = await pool.query(
-  //         `UPDATE invoices SET invoice_status = ?, amount = ?, due_date = ? WHERE job_list_id = ?`,
-  //         [
-  //           this.invoice_data.invoice_status,
-  //           this.invoice_data.amount,
-  //           this.invoice_data.due_date,
-  //           this.invoice_data.job_list_id,
-  //         ]
-  //       );
+  async ExpenseEditing(): Promise<any> {
+    try {
+      const [result] = await pool.query(
+        `UPDATE expenses SET expense_description = ?, amount = ?, expense_status = ?, category = ? WHERE expense_id = ?`,
+        [
+          this.expense_data.expense_description,
+          this.expense_data.amount,
+          this.expense_data.expense_status,
+          this.expense_data.category,
+          this.expense_data.expense_id,
+        ]
+      );
 
-  //       return result;
-  //     } catch (err: any) {
-  //       logger.error(err.sqlMessage, {
-  //         action: "Invoice information update",
-  //         status: "failed",
-  //       });
-  //       throw new ErrorHandler(err, 400);
-  //     }
-  //   }
+      return result;
+    } catch (err: any) {
+      logger.error(err.sqlMessage, {
+        action: "Expense information update",
+        status: "failed",
+      });
+      throw new ErrorHandler(err, 400);
+    }
+  }
 }
 
-export class InvoiceModelOperationsNoData {
-  async AllInvoices(): Promise<any> {
+export class ExpensesModelOperationsNoData {
+  async AllExpenses(): Promise<any> {
     try {
-      const [results] = await pool.query(`SELECT * FROM invoice_info`);
+      const [results] = await pool.query(`SELECT * FROM expenses`);
 
       return results;
     } catch (err: any) {
@@ -69,25 +70,20 @@ export class InvoiceModelOperationsNoData {
     }
   }
 
-  async InvoiceFilter(
+  async ExpenseFilter(
     filter_column: string,
     filter_data: string
   ): Promise<Array<any>> {
     try {
-      // validate allowed filter columns to prevent SQL injection
       const allowedColumns = [
-        "invoice_id",
-        "invoice_code",
+        "expense_id",
+        "expense_code",
         "job_list_id",
+        "dept_id",
+        "expense_description",
+        "category",
         "amount",
-        "invoice_status",
-        "due_date",
-        "cust_id",
-        "company_name",
-        "contact_first_name",
-        "contact_surname",
-        "email",
-        "phone",
+        "expense_status",
       ];
 
       if (!allowedColumns.includes(filter_column)) {
@@ -95,14 +91,14 @@ export class InvoiceModelOperationsNoData {
       }
 
       const [results] = await pool.query(
-        `SELECT * FROM invoice_info WHERE ${filter_column} = ?`,
+        `SELECT * FROM expenses WHERE ${filter_column} = ?`,
         [filter_data]
       );
 
       return results as Array<any>;
     } catch (err: any) {
       logger.error(err.sqlMessage, {
-        action: "Invoice filter query",
+        action: "Expenses filter query",
         status: "failed",
       });
       throw new ErrorHandler(err, 500);

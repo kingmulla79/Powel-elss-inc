@@ -3,17 +3,16 @@ import { Request, Response, NextFunction } from "express";
 import ErrorHandler from "../utils/Errorhandler";
 import { CatchAsyncError } from "../middleware/CatchAsyncErrors";
 import { logger } from "../utils/logger";
-import {
-  JobByTechnicianService,
-  JobDeleteService,
-  JobEditService,
-} from "../services/jobs.services";
+
 import {
   InvoiceDeleteService,
   InvoiceEditService,
-  InvoiceFetchService,
 } from "../services/invoice.services";
-import { ExpenseGenerationService } from "../services/expenses.services";
+import {
+  ExpenseFetchService,
+  ExpenseGenerationService,
+  ExpensesEditService,
+} from "../services/expenses.services";
 
 export const ExpensesGenerationController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -32,16 +31,16 @@ export const ExpensesGenerationController = CatchAsyncError(
   }
 );
 
-export const InvoiceFetchController = CatchAsyncError(
+export const ExpensesFetchController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const invoiceData = await InvoiceFetchService();
+      const expenseData = await ExpenseFetchService();
       res.status(200).json({
         success: true,
-        invoices: invoiceData,
-        message: `Invoice data fetched`,
+        expenses: expenseData,
+        message: `Expense data fetched`,
       });
-      logger.info(`Invoice data fetched by user: ${req.user?.user_id}`);
+      logger.info(`Expense data fetched by user: ${req.user?.user_id}`);
     } catch (error: any) {
       if (error) {
         return next(new ErrorHandler(error.message, 500));
@@ -50,16 +49,16 @@ export const InvoiceFetchController = CatchAsyncError(
   }
 );
 
-export const InvoiceEditController = CatchAsyncError(
+export const ExpensesEditController = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await InvoiceEditService(req.body);
+      await ExpensesEditService(req.body);
       res.status(200).json({
         success: true,
-        message: `Invoice successfully edited`,
+        message: `Expense successfully edited`,
       });
       logger.info(
-        `Invoice:${req.body.invoice_id} successfully edited by: ${req.user?.user_id}`
+        `Expense:${req.body.expense_id} successfully edited by: ${req.user?.user_id}`
       );
     } catch (error: any) {
       if (error) {
@@ -80,66 +79,6 @@ export const InvoiceDeleteController = CatchAsyncError(
       });
       logger.info(
         `Invoice: ${invoice_id} deleted successfully by: ${req.user?.user_id}`
-      );
-    } catch (error: any) {
-      if (error) {
-        return next(new ErrorHandler(error.message, 500));
-      }
-    }
-  }
-);
-
-export const JobByTechnicianController = CatchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { technicianId } = req.params;
-      const technicianJobData = await JobByTechnicianService(technicianId);
-      res.status(200).json({
-        success: true,
-        jobs: technicianJobData,
-        message: `All jobs for the technician ${technicianId} data fetched by: ${req.user?.user_id}`,
-      });
-      logger.info(
-        `All jobs for the technician ${technicianId} data fetched by: ${req.user?.user_id}`
-      );
-    } catch (error: any) {
-      if (error) {
-        return next(new ErrorHandler(error.message, 500));
-      }
-    }
-  }
-);
-
-export const JobEditController = CatchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await JobEditService(req.body, req.user?.user_role || "");
-      res.status(200).json({
-        success: true,
-        message: `Job ${req.body.job_id} successfully edited by : ${req.user?.user_id}`,
-      });
-      logger.info(
-        `Job ${req.body.job_id} successfully edited by : ${req.user?.user_id}`
-      );
-    } catch (error: any) {
-      if (error) {
-        return next(new ErrorHandler(error.message, 500));
-      }
-    }
-  }
-);
-
-export const JobDeleteController = CatchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { job_id } = req.params;
-      await JobDeleteService(job_id);
-      res.status(200).json({
-        success: true,
-        message: `Job ${job_id} successfully deleted by : ${req.user?.user_id}`,
-      });
-      logger.info(
-        `Job ${job_id} successfully deleted by : ${req.user?.user_id}`
       );
     } catch (error: any) {
       if (error) {
